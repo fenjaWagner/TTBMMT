@@ -102,6 +102,7 @@ def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, term_output, sizes):
     tensor_2_new = np.ascontiguousarray((np.transpose(Tensor_2, transpose_tuple_2)).reshape((size_batch, size_sum, size_rest_2)))
 
     O = mm.invoke_bmm(Tensor_1_new, tensor_2_new)
+    # TODO: Zurücktransponieren
     O = np.ascontiguousarray(O.reshape(tuple(size_o)))
 
     return O
