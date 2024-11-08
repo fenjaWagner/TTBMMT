@@ -132,7 +132,7 @@ def create_index_dict(term: str) -> dict:
         index_dict[term[i]] = i
     return index_dict
 
-def create_transpose_tuple_term(term:str, batch_dim: str, sum_dim: str, index_sum, sizes: dict) -> tuple:
+def create_transpose_tuple_term(term:str, batch_dim: list, sum_dim: list, index_sum, sizes: dict) -> tuple:
     """Generates the transpose tuple for the given parameters for the tensor.
 
     Args:
@@ -147,15 +147,29 @@ def create_transpose_tuple_term(term:str, batch_dim: str, sum_dim: str, index_su
         tuple(index_l): Contains the indices in the order after transposing.
         size_prod(int): Size of the dimension between sum and batch dimension.
     """
+    term_length = len(term)
+    batch_length = len(batch_dim)
+    sum_length = len(sum_dim)
+
     index_dict = create_index_dict(term)
-    index_l = [0,]*len(term)
-    transpose_l = [0,]* len(term)
+    index_l = [0,]*term_length
+    transpose_l = [0,]* term_length
 
-    index_l[0] = batch_dim
-    transpose_l[0] = index_dict.pop(batch_dim)
+    
+    # insert batch dimension into transpose 
+    index_l[0: batch_length] = [x for x in batch_dim]
+    transpose_l[0:batch_length] = [index_dict.pop(x) for x in batch_dim]
 
-    index_l[index_sum] = sum_dim
-    transpose_l[index_sum] = index_dict.pop(sum_dim)
+    #index_l[0] = batch_dim
+    #transpose_l[0] = index_dict.pop(batch_dim)
+
+    if index_sum == 1:
+        index_l[batch_length: batch_length+ sum_length] = [x for x in sum_dim]
+        transpose_l[batch_length: batch_length+ sum_length] = [index_dict.pop(x) for x in sum_dim]
+
+
+    #index_l[index_sum] = sum_dim
+    #transpose_l[index_sum] = index_dict.pop(sum_dim)
 
 
     # Calculate size of the dimensions except batch and sum dimension.
@@ -165,7 +179,7 @@ def create_transpose_tuple_term(term:str, batch_dim: str, sum_dim: str, index_su
         size_prod *= i
 
 
-    if len(term) > 2:
+    if term_length > 2:
         if index_sum == 1:
             index_l[2:] = [k for k in index_dict]
             transpose_l[2:] = [index_dict[k] for k in index_dict]
@@ -190,9 +204,9 @@ def find_mapping(term1: str, term2: str, A: np.array, B: np.array, term_output: 
     for i in term1:
         if i in set_term2:
             if i in set_output:
-                batch_dim = i
+                batch_dim.append(i)
             else: 
-                sum_dim = i
+                sum_dim.append(i)
     
     term_1_transpose, term_1_index, size_prod_1 = create_transpose_tuple_term(term1, batch_dim, sum_dim, -1, sizes)
     term_2_transpose, term_2_index, size_prod_2 = create_transpose_tuple_term(term2, batch_dim, sum_dim, 1, sizes)
