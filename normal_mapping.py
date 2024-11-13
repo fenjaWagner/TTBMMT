@@ -15,7 +15,7 @@ def list_to_string(li):
     return st
 
 def create_index_dict(term: str) -> dict:
-    """Creates a dict with all indices in the term.
+    """Creates a dict with all indices and their position in the term.
 
     Args:
         term (str): Term
@@ -259,12 +259,12 @@ def test_mapping_no_batch_no_sum():
     
 
     str_A = "ijmk"
-    str_B = "zyln"
-    str_O = "izyjmln"
+    str_B = "z4ln"
+    str_O = "iz4jmln"
     sizes = {"i": 3,
              "j": 4, 
              "k": 5,
-             "y": 5,
+             "4": 5,
              "l": 6,
              "m": 6,
              "n": 2,
@@ -272,7 +272,7 @@ def test_mapping_no_batch_no_sum():
 
     U, term = normal_mapping(str_A, str_B, A, B, str_O,sizes)
     print("term: ", term)
-    T = torch.einsum("ijmk, zyln ->" + term, At,Bt)
+    T = torch.einsum("ijmk, zyln ->ijmkzyln", At,Bt)
     Ut = torch.from_numpy(U)
 
     
@@ -289,4 +289,4 @@ def test():
     print("complete")
     test_mapping_case_normal()
 
-test()
+test_mapping_no_batch_no_sum()
