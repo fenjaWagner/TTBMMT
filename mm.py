@@ -1,5 +1,4 @@
 import numpy as np
-import re
 import torch
 
 
@@ -147,7 +146,6 @@ def find_mapping(term1: str, term2: str, A: np.array, B: np.array, term_output: 
     O = np.ascontiguousarray(O.reshape(tuple(size_o)))
 
     return O
-
 
 
 
