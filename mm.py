@@ -2,75 +2,6 @@ import numpy as np
 import re
 import torch
 
-# TODO: ersetze shape durch sizes dict
-def create_iterator(term_dict, shape):
-    """Creates an iterator that iterates over all the different indices in the term. 
-
-    Args:
-        term_dict (dict): Dictionary that holds the position of an idex in the term.
-        shape (tuple): Shape of the tensor. 
-
-    Returns:
-        iterator: Iterator
-        shape_l: Shape of the new tensor.
-        index_l: List of the new term for the processed te
-    """
-    shape_l = []
-    index_l = []
-    for k in term_dict:
-        shape_l.append(shape[term_dict[k][0]])
-        index_l.append(k)
-    shape_tuple = tuple(shape_l)
-    iterator = np.ndindex(shape_tuple)
-    return iterator, shape_l, index_l
-
-def calculate_shape_prod(shape):
-    shape_sum = [0,]*len(shape)
-    prod = 1
-    for i in range(len(shape)-1, -1, -1):
-        shape_sum[i] = prod
-        prod *= shape[i]
-    return shape_sum
-
-
-def single_trace(term: str, A: np.array, shape: tuple):
-    shape_sum = calculate_shape_prod(shape)   
-    #term_list = [x for x in term]
-
-    # create dict that holds the positions of the indices
-    term_dict = {}
-    for i in range(len(term)):
-        if term[i] not in term_dict:
-            term_dict[term[i]] = [i]
-        else: 
-            term_dict[term[i]].append(i)
-    
-
-    iterator, shape_new, index_new = create_iterator(term_dict, shape)
-
-    new_shape_sum = calculate_shape_prod(shape_new)
-
-    prod = 1
-    for i in shape_new:
-        prod *= i
-
-    A_new = np.zeros(prod)
-
-    for index in iterator:
-        index_A = 0
-        index_A_new = 0
-        for i in range(len(index)):
-            index_A_new += index[i]*new_shape_sum[i]
-            variable = index_new[i]
-            for l in term_dict[variable]:
-                index_A += index[i]*shape_sum[l]
-        
-        A_new[index_A_new] += A[index_A]
-    
-    A_new = np.ascontiguousarray(A_new.reshape(tuple(shape_new)))
-    return A_new, str(index_new)  
-
-
 
 def matmul_bmm(A: np.array, B: np.array, C: np.array, size_A: tuple, size_B: tuple, batch_idx: int) -> np.array:
     round_index_c = batch_idx * size_A[1] * size_B[2]
@@ -110,7 +41,7 @@ def invoke_bmm(A: np.array, B: np.array) -> np.array:
     C = C.reshape((shapeA[0], shapeA[1], shapeB[2]))
     return C
     
-    
+
 
 def create_set(term: str) -> set:
     """Creates a set of all indices that are in the term.
@@ -166,11 +97,6 @@ def create_transpose_tuple_term(term:str, batch_dim: list, sum_dim: list, index_
     if index_sum == 1:
         index_l[batch_length: batch_length+ sum_length] = [x for x in sum_dim]
         transpose_l[batch_length: batch_length+ sum_length] = [index_dict.pop(x) for x in sum_dim]
-
-
-    #index_l[index_sum] = sum_dim
-    #transpose_l[index_sum] = index_dict.pop(sum_dim)
-
 
     # Calculate size of the dimensions except batch and sum dimension.
     size = [sizes[k] for k in index_dict]
@@ -229,14 +155,14 @@ def read_input_string(string, arrays):
 
     input_terms, output = string.split("->")
     input = input_terms.split(",")
-    size = {}
+    sizes = {}
 
     for term, array in zip(input, arrays):
         for k, d in zip(term, array.shape):
-            size[k] = d
-
-
+            sizes[k] = d
     
+    return sizes
+
 
 def test_bmm():
     A = np.random.rand(10, 15, 11)
@@ -258,20 +184,6 @@ def test_manage_input_strings():
     string = "ijk, kjl  -> zs"
     read_input_string(string)
 
-
-
-def test_trace():
-    A = np.random.rand(5,5,4,3,5)
-    print(A)
-    #A = np.array([[1,2,3], [3,4,5], [5,6,7]])
-    string = "iikji"
-    At = torch.from_numpy(A)
-    B = A.reshape(-1)
-    D = torch.einsum("iikji->ikj", At)
-    print(D)
-    C, index = single_trace(string, B, A.shape)
-    Ct = torch.from_numpy(C)
-    print((Ct-D).sum())
 
 def test_find_mapping():
     A = np.random.rand(3,4,6,5)
@@ -298,8 +210,6 @@ def test_find_mapping():
     
     print((T-Ut).sum())
 
-
-test_trace()
 
 
 
