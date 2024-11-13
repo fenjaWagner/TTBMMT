@@ -5,6 +5,14 @@ import mm
 
 
 def create_index_dict(term: str) -> dict:
+    """Creates a dict with all indices in the term.
+
+    Args:
+        term (str): Term
+
+    Returns:
+        dict: Index dict
+    """
     index_dict = {}
     for i in range(len(term)):
         index_dict[term[i]] = i
@@ -33,6 +41,16 @@ def transpose_tuple(term_1, term_transposed) -> tuple:
     return tuple(transpose_list)
 
 def find_batch_sum_terms(term_1, term_2, term_output):
+    """Retreives all batch and sum dimensions from the given term.
+
+    Args:
+        term_1 (str): _description_
+        term_2 (str): _description_
+        term_output (str): _description_
+
+    Returns:
+        batch_terms (list), sum_terms (list): Lists containing the respective indices.
+    """
     set_term_2 = create_set(term_2)
     set_output = create_set(term_output)
 
@@ -50,6 +68,17 @@ def find_batch_sum_terms(term_1, term_2, term_output):
 
 
 def generate_transposed_term(term, batch_terms, sum_terms, case):
+    """Generates the transposed term and the tuple to transpose the tensor considering the batch and sum terms. 
+
+    Args:
+        term (str): _description_
+        batch_terms (list): _description_
+        sum_terms (list): _description_
+        case (int): _description_
+
+    Returns:
+        _type_: _description_
+    """
     term_length = len(term)
     batch_length = len(batch_terms)
     sum_length = len(sum_terms)
@@ -77,18 +106,42 @@ def generate_transposed_term(term, batch_terms, sum_terms, case):
 
 
 def calculate_size(term, sizes):
+    """Calculates the size of an tensor given its index term. 
+
+    Args:
+        term (str): _description_
+        sizes (dict): _description_
+
+    Returns:
+        int: _description_
+    """
     size = 1
     for i in term:
         size *= sizes[i]
     return size
 
+def sum_str(list):
+    new_str = ""
+    for s in list:
+        new_str += str(s)
+    return new_str
     
 
 def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, term_output, sizes):
-    size_o = []
-    for i in term_output:
-        size_o.append(sizes[i])
+    """Maps the contraction of two given tensors to the bmm.
 
+    Args:
+        term_1 (str): _description_
+        term_2 (str): _description_
+        Tensor_1 (np.array): _description_
+        Tensor_2 (np.array): _description_
+        term_output (str): _description_
+        sizes (dict): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
     batch_terms, sum_terms = find_batch_sum_terms(term_1, term_2, term_output)
     transpose_tuple_1, new_term_1, rest_terms_1 = generate_transposed_term(term_1, batch_terms, sum_terms, "first")
     transpose_tuple_2, new_term_2, rest_terms_2 = generate_transposed_term(term_2, batch_terms, sum_terms, "second")
@@ -101,17 +154,23 @@ def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, term_output, sizes):
     Tensor_1_new = np.ascontiguousarray((np.transpose(Tensor_1, transpose_tuple_1)).reshape((size_batch, size_rest_1, size_sum )))
     tensor_2_new = np.ascontiguousarray((np.transpose(Tensor_2, transpose_tuple_2)).reshape((size_batch, size_sum, size_rest_2)))
 
-    O = mm.invoke_bmm(Tensor_1_new, tensor_2_new)
+    O_Tensor = mm.invoke_bmm(Tensor_1_new, tensor_2_new)
+    term_O = sum_str(batch_terms) + sum_str(rest_terms_1) + sum_str(rest_terms_2)
+
+    size_o = []
+    for i in term_O:
+        size_o.append(sizes[i])
+
     # TODO: Zurücktransponieren
-    O = np.ascontiguousarray(O.reshape(tuple(size_o)))
+    O_Tensor = np.ascontiguousarray(O_Tensor.reshape(tuple(size_o)))
 
-    return O
-
-
+    return O_Tensor, term_O
 
 
 
-def test_find_mapping():
+
+
+def test_mapping():
     A = np.random.rand(3,4,6,5)
     B = np.random.rand(3,5,6,2)
 
@@ -119,7 +178,6 @@ def test_find_mapping():
     Bt = torch.from_numpy(B)
     
 
-    T = torch.einsum("ijmk, ikln -> ijmln", At,Bt)
     str_A = "ijmk"
     str_B = "ikln"
     str_O = "ijmln"
@@ -130,7 +188,9 @@ def test_find_mapping():
              "m": 6,
              "n": 2}
 
-    U = normal_mapping(str_A, str_B, A, B, str_O,sizes)
+    U, term = normal_mapping(str_A, str_B, A, B, str_O,sizes)
+    print("term: ", term)
+    T = torch.einsum("ijmk, ikln ->" + term, At,Bt)
     Ut = torch.from_numpy(U)
 
     
@@ -138,5 +198,5 @@ def test_find_mapping():
 
     
     
-test_find_mapping()
+test_mapping()
     
