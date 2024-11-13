@@ -2,6 +2,17 @@ import torch
 import numpy as np
 import mm 
 
+def tuple_to_list(tup):
+    li = []
+    for i in tup:
+        li.append(i)
+    return li
+
+def list_to_string(li):
+    st = ''
+    for i in li:
+        st += str(i)
+    return st
 
 def create_index_dict(term: str) -> dict:
     """Creates a dict with all indices in the term.
@@ -97,9 +108,11 @@ def generate_transposed_term(term, batch_terms, sum_terms, case):
         term_transpose = batch_index_list  + sum_index_list + rest_index_list
         new_term_list = batch_terms  + sum_terms + rest_terms
 
-    new_term = ""
-    for i in new_term_list:
-        new_term += i
+    elif case == "no_sum":
+        term_transpose = batch_index_list + rest_index_list
+        new_term_list = batch_terms + rest_terms
+
+    new_term = list_to_string(new_term_list)
 
     return tuple(term_transpose), new_term, rest_terms
 
@@ -125,7 +138,6 @@ def sum_str(list):
         new_str += str(s)
     return new_str
     
-
 def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, term_output, sizes):
     """Maps the contraction of two given tensors to the bmm.
 
@@ -142,6 +154,7 @@ def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, term_output, sizes):
     """
     
     batch_terms, sum_terms = find_batch_sum_terms(term_1, term_2, term_output)
+
     transpose_tuple_1, new_term_1, rest_terms_1 = generate_transposed_term(term_1, batch_terms, sum_terms, "first")
     transpose_tuple_2, new_term_2, rest_terms_2 = generate_transposed_term(term_2, batch_terms, sum_terms, "second")
 
@@ -167,9 +180,7 @@ def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, term_output, sizes):
 
 
 
-
-
-def test_mapping():
+def test_mapping_case_normal():
     A = np.random.rand(3,4,6,5)
     B = np.random.rand(3,5,6,2)
 
@@ -195,7 +206,87 @@ def test_mapping():
     
     print((T-Ut).sum())
 
+def test_mapping_no_sum():
+    i = [[1,1,1,1],[2,2,2,2]]
+    j = [[8,9,10], [3,4,5]]
+    k = [11,11,11]
+
+    I = np.array(i)
+    J = np.array(j)
+    O, term = normal_mapping("li", "lj", I, J, "lij", {"i": 4, "l": 2, "j": 3})
+    I = torch.tensor(i)
+    J = torch.tensor(j)
+    K = torch.tensor(k)
+
+    C = torch.einsum("li,lj ->"+ term, I, J)
+
+    print((C -torch.from_numpy(O)).sum())
+
+
+def test_mapping_no_batch():
+    A = np.random.rand(3,4,6,5)
+    B = np.random.rand(3,5,6,2)
+
+    At = torch.from_numpy(A)
+    Bt = torch.from_numpy(B)
     
+
+    str_A = "ijmk"
+    str_B = "zkln"
+    str_O = "izjmln"
+    sizes = {"i": 3,
+             "j": 4, 
+             "k": 5,
+             "l": 6,
+             "m": 6,
+             "n": 2,
+             "z": 3}
+
+    U, term = normal_mapping(str_A, str_B, A, B, str_O,sizes)
+    print("term: ", term)
+    T = torch.einsum("ijmk, zkln ->" + term, At,Bt)
+    Ut = torch.from_numpy(U)
+
     
-test_mapping()
+    print((T-Ut).sum())
+
+def test_mapping_no_batch_no_sum():
+    A = np.random.rand(3,4,6,5)
+    B = np.random.rand(3,5,6,2)
+
+    At = torch.from_numpy(A)
+    Bt = torch.from_numpy(B)
     
+
+    str_A = "ijmk"
+    str_B = "zyln"
+    str_O = "izyjmln"
+    sizes = {"i": 3,
+             "j": 4, 
+             "k": 5,
+             "y": 5,
+             "l": 6,
+             "m": 6,
+             "n": 2,
+             "z": 3}
+
+    U, term = normal_mapping(str_A, str_B, A, B, str_O,sizes)
+    print("term: ", term)
+    T = torch.einsum("ijmk, zyln ->" + term, At,Bt)
+    Ut = torch.from_numpy(U)
+
+    
+    print((T-Ut).sum())
+    
+
+def test():
+    print("test_no_batch_no_sum")    
+    test_mapping_no_batch_no_sum()
+    print("test_no_sum")
+    test_mapping_no_sum()
+    print("test_no_batch")
+    test_mapping_no_batch()
+    print("complete")
+    test_mapping_case_normal()
+
+test()
