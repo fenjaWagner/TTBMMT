@@ -100,6 +100,17 @@ def calc_positions(index, sum_new_shape, sum_old_shape, new_term,term_dict):
     pos_A_old = 0
     for i in range(len(index)):
         pos_A_new += index[i]*sum_new_shape[i]
-        for j in term_dict[new_term[i]]:
-            pos_A_old += index[i] * sum_old_shape[j]
+        token = term_dict[new_term[i]]
+        if isinstance(token, list):
+            for j in term_dict[new_term[i]]:
+                pos_A_old += index[i] * sum_old_shape[j]
+        else:
+            pos_A_old += index[i] * sum_old_shape[token]
     return pos_A_old, pos_A_new
+
+
+def generate_list_from_set(set):
+    list  =[]
+    for i in set:
+        list.append(i)
+    return list

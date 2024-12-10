@@ -63,5 +63,5 @@ def test_trace():
     
     print((Ct-D).sum())
 
-test_trace()
+#test_trace()
 
