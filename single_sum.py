@@ -7,7 +7,7 @@ def create_sum_terms(term_input, term_output):
     set_o = useful_funcs.create_set(term_output)
 
     for i in term_input:
-        if i not in term_output:
+        if i not in set_o:
             sum_terms.append(i)
 
     return sum_terms
@@ -29,6 +29,7 @@ def single_sum(term_input: str , Tensor: np.array , sum_dimensions: str):
     summed_shape_new = useful_funcs.sum_shape(shape_new)
 
     Tensor_new = np.zeros(useful_funcs.calc_new_length(shape_new))
+    
 
     # Idee: wie in trace mit iteratorn. Sinnvoll ohne transponieren?
 

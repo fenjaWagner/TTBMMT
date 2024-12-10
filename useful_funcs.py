@@ -1,4 +1,4 @@
-
+import numpy as np
 
 def create_set(term: str) -> set:
     """Creates a set of all indices that are in the term.
@@ -89,3 +89,17 @@ def calc_new_length(shape):
     for i in shape:
         prod *= i
     return prod
+
+def create_iterator(shape):
+    iterator = np.ndindex(tuple(shape))
+    return iterator
+
+def calc_positions(index, sum_new_shape, sum_old_shape, new_term,term_dict):
+    
+    pos_A_new = 0
+    pos_A_old = 0
+    for i in range(len(index)):
+        pos_A_new += index[i]*sum_new_shape[i]
+        for j in term_dict[new_term[i]]:
+            pos_A_old += index[i] * sum_old_shape[j]
+    return pos_A_old, pos_A_new

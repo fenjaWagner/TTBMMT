@@ -1,5 +1,6 @@
 import torch 
 import numpy as np
+import useful_funcs
 import re
 import mm 
 
@@ -21,43 +22,21 @@ def generate_new_term(term_dict, sizes):
         new_shape.append(sizes[k])
     return new_term, new_shape
 
-def create_iterator(shape):
-    iterator = np.ndindex(tuple(shape))
-    return iterator
-
-def sum_shape(shape):
-    shape_sum = [0,]*len(shape)
-    prod = 1
-    for i in range(len(shape)-1, -1, -1):
-        shape_sum[i] = prod
-        prod *= shape[i]
-    return shape_sum
-
-def calc_new_length(shape):
-    prod = 1
-    for i in shape:
-        prod *= i
-    return prod
 
 def single_trace(term, A, sizes):
     term_dict = create_dict(term)
     new_term, new_shape = generate_new_term(term_dict, sizes)
-    iterator = create_iterator(new_shape)
-    sum_old_shape = sum_shape(A.shape)
-    sum_new_shape = sum_shape(new_shape)
+    iterator = useful_funcs.create_iterator(new_shape)
+    sum_old_shape = useful_funcs.sum_shape(A.shape)
+    sum_new_shape = useful_funcs.sum_shape(new_shape)
 
-    prod = calc_new_length(new_shape)
+    prod = useful_funcs.calc_new_length(new_shape)
     A_new = np.zeros(prod)
     A = A.reshape(-1)
-
+    
     for index in iterator:
-        pos_A_new = 0
-        pos_A_old = 0
-        for i in range(len(index)):
-            pos_A_new += index[i]*sum_new_shape[i]
-            for j in term_dict[new_term[i]]:
-                pos_A_old += index[i] * sum_old_shape[j]
-            A_new[pos_A_new] = A[pos_A_old]
+        pos_A_old, pos_A_new = useful_funcs.calc_positions(index, sum_new_shape, sum_old_shape,  new_term,term_dict)
+        A_new[pos_A_new] = A[pos_A_old]
             
     A_new = A_new.reshape(tuple(new_shape))
     return A_new, new_term
