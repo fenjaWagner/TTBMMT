@@ -43,7 +43,7 @@ def generate_transposed_term(term, batch_terms, sum_terms, case):
     return tuple(term_transpose), new_term, rest_terms
 
 
-def normal_mapping(term_1, term_2, Tensor_1, Tensor_2, full_term_dict, sizes):
+def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, full_term_dict, sizes):
     """Maps the contraction of two given tensors to the bmm.
 
     Args:
@@ -105,7 +105,7 @@ def test_mapping_case_normal():
     full_term_dict = {"batch": {"i"},
                       "contract": {"k"}}
 
-    U, term = normal_mapping(str_A, str_B, A, B, full_term_dict,sizes)
+    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
     print("term: ", term)
     T = torch.einsum("ijmk, ikln ->" + term, At,Bt)
     Ut = torch.from_numpy(U)
@@ -122,7 +122,7 @@ def test_mapping_no_sum():
     J = np.array(j)
     full_term_dict = {"batch": {"l"},
                       "contract": set()}
-    O, term = normal_mapping("li", "lj", I, J, full_term_dict, {"i": 4, "l": 2, "j": 3})
+    O, term = map_to_bmm("li", "lj", I, J, full_term_dict, {"i": 4, "l": 2, "j": 3})
     I = torch.tensor(i)
     J = torch.tensor(j)
     K = torch.tensor(k)
@@ -153,7 +153,7 @@ def test_mapping_no_batch():
     full_term_dict = {"batch": set(),
                       "contract": {"k"}}
 
-    U, term = normal_mapping(str_A, str_B, A, B, full_term_dict,sizes)
+    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
     print("term: ", term)
     T = torch.einsum("ijmk, zkln ->" + term, At,Bt)
     Ut = torch.from_numpy(U)
@@ -183,7 +183,7 @@ def test_mapping_no_batch_no_sum():
     full_term_dict = {"batch": set(),
                       "contract": set()}
 
-    U, term = normal_mapping(str_A, str_B, A, B, full_term_dict,sizes)
+    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
     print("term: ", term)
     T = torch.einsum("ijmk, zyln ->ijmkzyln", At,Bt)
     Ut = torch.from_numpy(U)

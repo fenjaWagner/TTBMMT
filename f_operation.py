@@ -1,6 +1,7 @@
 import torch 
 import numpy as np
-import mm 
+import f_single_engine
+import f_map_to_bmm 
 import useful_funcs
 
 def create_double_dict(term, term_name, index_dict):
@@ -42,6 +43,18 @@ def create_index_dict(term_A, term_B, term_O) -> dict:
     index_dict["single_B"], dummy_c, dummy_b = create_single_dict(index_dict["term_B"], index_dict["term_A"], index_dict["output"])
 
     return index_dict
+
+
+def double_engine(tensor_A, tensor_B, term_A, term_B, term_O):
+    sizes = {}
+    full_term_dict = create_index_dict(term_A, term_B, term_O)
+    tensor_A, term_A, full_term_dict = f_single_engine.manage_single_tensor(tensor_A, term_A, "A", full_term_dict, sizes)
+    tensor_B, term_B, full_term_dict = f_single_engine.manage_single_tensor(tensor_B, term_B, "B", full_term_dict, sizes)
+
+    product_tensor, product_term = f_map_to_bmm.map_to_bmm(term_A, term_B, tensor_A, tensor_B, full_term_dict, sizes)
+    
+    return product_tensor, product_term
+
 
     
     
