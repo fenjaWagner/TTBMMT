@@ -1,0 +1,3 @@
+/home/fenja/Dokumente/Uni/13-WS24/Projektarbeit/TTBMMT/cmake-build-debug/CMakeFiles/TTBMMT.dir
+/home/fenja/Dokumente/Uni/13-WS24/Projektarbeit/TTBMMT/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/fenja/Dokumente/Uni/13-WS24/Projektarbeit/TTBMMT/cmake-build-debug/CMakeFiles/rebuild_cache.dir
