@@ -1,4 +1,5 @@
 import numpy as np
+import wrapper
 import torch
 
 
@@ -40,6 +41,16 @@ def invoke_bmm(A: np.array, B: np.array) -> np.array:
     C = C.reshape((shapeA[0], shapeA[1], shapeB[2]))
     return C
     
+def invoke_c_bmm(A: np.array, B: np.array, data_type = 0) -> np.array:
+    #shapeA = A.shape
+    #shapeB = B.shape
+    #C = np.zeros((A.shape[0]* A.shape[1]* B.shape[2]))
+    #A = np.ascontiguousarray(A.reshape(-1))
+    #B = np.ascontiguousarray(B.reshape(-1))
+
+    C = wrapper.call_cpp_bmm(A, B)
+    #C = C.reshape((shapeA[0], shapeA[1], shapeB[2]))
+    return C
 
 
 def create_set(term: str) -> set:

@@ -69,9 +69,10 @@ def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, full_term_dict, sizes):
     size_rest_2 = useful_funcs.calculate_size(rest_terms_2, sizes)
 
     Tensor_1_new = np.ascontiguousarray((np.transpose(Tensor_1, transpose_tuple_1)).reshape((size_batch, size_rest_1, size_sum )))
-    tensor_2_new = np.ascontiguousarray((np.transpose(Tensor_2, transpose_tuple_2)).reshape((size_batch, size_sum, size_rest_2)))
-
-    O_Tensor = mm.invoke_bmm(Tensor_1_new, tensor_2_new)
+    Tensor_2_new = np.ascontiguousarray((np.transpose(Tensor_2, transpose_tuple_2)).reshape((size_batch, size_sum, size_rest_2)))
+     
+    #O_Tensor = mm.invoke_bmm(Tensor_1_new, Tensor_2_new)
+    O_Tensor = mm.invoke_c_bmm(Tensor_1_new, Tensor_2_new)
     term_O = useful_funcs.sum_str(batch_terms) + useful_funcs.sum_str(rest_terms_1) + useful_funcs.sum_str(rest_terms_2)
 
     size_o = []
