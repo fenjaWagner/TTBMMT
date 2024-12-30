@@ -1,4 +1,3 @@
-import torch 
 import numpy as np
 import useful_funcs
 import re
@@ -53,15 +52,13 @@ def test_trace():
     for i in range(len(string)):
         sizes[string[i]] = A.shape[i]
 
-    At = torch.from_numpy(A)
     #B = A.reshape(-1)
     C, new_term = single_trace(string, A, sizes)
     print("new_term: ", new_term)
-    D = torch.einsum("iikjij->"+new_term, At)
+    D = np.einsum("iikjij->"+new_term, A)
     
-    Ct = torch.from_numpy(C)
     
-    print((Ct-D).sum())
+    print((C-D).sum())
 
 #test_trace()
 

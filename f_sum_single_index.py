@@ -1,4 +1,3 @@
-import torch 
 import numpy as np
 import  useful_funcs
 
@@ -89,14 +88,11 @@ def test_trace():
     for i in range(len(A_term)):
         sizes[A_term[i]] = A.shape[i]
 
-    At = torch.from_numpy(A)
     C, new_term = remove_single_index(A, A_term, "A",term_dict_full,  sizes)
     print("new_term: ", new_term)
-    D = torch.einsum("ijklmn->"+new_term, At)
-    
-    Ct = torch.from_numpy(C)
-    
-    print((Ct-D).sum())
+    D = np.einsum("ijklmn->"+new_term, A)
+
+    print((C-D).sum())
 
 #test_trace()
     

@@ -1,4 +1,4 @@
-import torch 
+#import torch 
 import numpy as np
 import mm 
 import useful_funcs
@@ -90,10 +90,6 @@ def test_mapping_case_normal():
     A = np.random.rand(3,4,6,5)
     B = np.random.rand(3,5,6,2)
 
-    At = torch.from_numpy(A)
-    Bt = torch.from_numpy(B)
-    
-
     str_A = "ijmk"
     str_B = "ikln"
     str_O = "ijmln"
@@ -108,39 +104,32 @@ def test_mapping_case_normal():
 
     U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
     print("term: ", term)
-    T = torch.einsum("ijmk, ikln ->" + term, At,Bt)
-    Ut = torch.from_numpy(U)
-
+    T = np.einsum("ijmk, ikln ->" + term, A,B)
     
-    print((T-Ut).sum())
+    
+    print((T-U).sum())
 
 def test_mapping_no_sum():
-    i = [[1,1,1,1],[2,2,2,2]]
+    i = [[1.1,1,1,1],[2,2,2,2]]
     j = [[8,9,10], [3,4,5]]
     k = [11,11,11]
 
-    I = np.array(i)
-    J = np.array(j)
+    I = np.array(i, dtype=int)
+    J = np.array(j, dtype = int)
     full_term_dict = {"batch": {"l"},
                       "contract": set()}
     O, term = map_to_bmm("li", "lj", I, J, full_term_dict, {"i": 4, "l": 2, "j": 3})
-    I = torch.tensor(i)
-    J = torch.tensor(j)
-    K = torch.tensor(k)
+    
+    C = np.einsum("li,lj ->"+ term, I, J)
 
-    C = torch.einsum("li,lj ->"+ term, I, J)
-
-    print((C -torch.from_numpy(O)).sum())
+    print((C -O).sum())
 
 
 def test_mapping_no_batch():
     A = np.random.rand(3,4,6,5)
     B = np.random.rand(3,5,6,2)
 
-    At = torch.from_numpy(A)
-    Bt = torch.from_numpy(B)
     
-
     str_A = "ijmk"
     str_B = "zkln"
     str_O = "izjmln"
@@ -156,19 +145,14 @@ def test_mapping_no_batch():
 
     U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
     print("term: ", term)
-    T = torch.einsum("ijmk, zkln ->" + term, At,Bt)
-    Ut = torch.from_numpy(U)
-
+    T = np.einsum("ijmk, zkln ->" + term, A,B)
     
-    print((T-Ut).sum())
+    print((T-U).sum())
 
 def test_mapping_no_batch_no_sum():
     A = np.random.rand(3,4,6,5)
     B = np.random.rand(3,5,6,2)
 
-    At = torch.from_numpy(A)
-    Bt = torch.from_numpy(B)
-    
 
     str_A = "ijmk"
     str_B = "z4ln"
@@ -186,11 +170,10 @@ def test_mapping_no_batch_no_sum():
 
     U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
     print("term: ", term)
-    T = torch.einsum("ijmk, zyln ->ijmkzyln", At,Bt)
-    Ut = torch.from_numpy(U)
-
+    T = np.einsum("ijmk, zyln ->ijmkzyln", A,B)
+   
     
-    print((T-Ut).sum())
+    print((T-U).sum())
     
 
 def test():
@@ -202,5 +185,29 @@ def test():
     test_mapping_no_batch()
     print("complete")
     test_mapping_case_normal()
+
+
+def test_without_torch():
+    A = np.random.rand(3,4,6,5)
+    B = np.random.rand(3,5,6,2)
+
+ 
+
+    str_A = "ijmk"
+    str_B = "ikln"
+    str_O = "ijmln"
+    sizes = {"i": 3,
+             "j": 4, 
+             "k": 5,
+             "l": 6,
+             "m": 6,
+             "n": 2}
+    full_term_dict = {"batch": {"i"},
+                      "contract": {"k"}}
+
+    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
+    print("term: ", term)
+
+
 
 test()
