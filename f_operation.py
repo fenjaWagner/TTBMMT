@@ -7,16 +7,24 @@ import useful_funcs
 def build_sizes(term_A, term_B, shape_A, shape_B):
     sizes = {}
     for char, size in zip(term_A, shape_A):
-        if char in sizes and sizes[char] != size:
+        if char in sizes: 
+            if sizes[char] != size:
+                print("char", char)
+                print("size", size)
+                raise Exception("Unconsistend sizes.")
+        else:
             sizes[char] = size
-        else: 
-            raise Exception("Unconsistend sizes.")
+            
         
     for char, size in zip(term_B, shape_B):
-        if char in sizes and sizes[char] != size:
+        if char in sizes: 
+            if sizes[char] != size:
+                print("char", char)
+                print("size", size)
+                
+                raise Exception("Unconsistend sizes.")
+        else:
             sizes[char] = size
-        else: 
-            raise Exception("Unconsistend sizes.")
     return sizes
     
 def remove_double_indices(term, Tensor, histo, sizes):
@@ -69,7 +77,7 @@ def find_single_indices(term_A, term_B, histo):
 
     return single_A, single_B, contract, batch
 
-def invoke_contraction(term_A, term_B, A, B, histo, sizes):
+def invoke_contraction(term_A, term_B, A, B, histo):
     sizes = build_sizes(term_A, term_B, A.shape, B.shape)
     #remove double indices
     A, term_A = remove_double_indices(term_A, A, histo, sizes)
@@ -85,11 +93,36 @@ def invoke_contraction(term_A, term_B, A, B, histo, sizes):
     #contract -> Tensor_new, term_new
     return f_map_to_bmm.map_to_bmm(term_A, term_B, A, B, contract, batch, sizes)
 
+def build_histo(term_list):
+    histo = {}
+    for term in term_list:
+        for char in term:
+            if char in histo:
+                histo[char] += 1
+            else: 
+                histo[char] = 1
+    return histo
     
+def test_ever():
+    A = np.random.rand(2,3,3,4,5)
+    B = np.random.rand(2,2,2,4,2,7)
+    term_A = "hiijk"
+    term_B = "llljho"
+    term_O = "ijo"
+    histo = build_histo([term_A, term_B, term_O])
+
+    C, term_C = invoke_contraction(term_A, term_B, A, B, histo)
+    print(term_C)
+    
+    #works!!
+    inter_A = np.einsum("hiijk->hijk", A)
+    inter_B = np.einsum("llljho->ljho", B)
+    Test = np.einsum("hijk, ljho -> "+term_C, inter_A, inter_B)
+
+    print("Ergebnis: ", (C-Test).sum())
 
 
-
-        
+test_ever()
 
 
         
