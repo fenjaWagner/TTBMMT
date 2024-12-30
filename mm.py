@@ -1,6 +1,5 @@
 import numpy as np
 import wrapper
-import torch
 
 
 def matmul_bmm(A: np.array, B: np.array, C: np.array, size_A: tuple, size_B: tuple, batch_idx: int) -> np.array:
@@ -41,17 +40,27 @@ def invoke_bmm(A: np.array, B: np.array) -> np.array:
     C = C.reshape((shapeA[0], shapeA[1], shapeB[2]))
     return C
     
-def invoke_c_bmm(A: np.array, B: np.array, data_type = 0) -> np.array:
+def invoke_c_bmm(A: np.array, B: np.array) -> np.array:
     #shapeA = A.shape
     #shapeB = B.shape
     #C = np.zeros((A.shape[0]* A.shape[1]* B.shape[2]))
     #A = np.ascontiguousarray(A.reshape(-1))
     #B = np.ascontiguousarray(B.reshape(-1))
+    
+    if A.dtype == "double":
+        print("double")
+        C = wrapper.call_cpp_bmm(A, B, 0)
+        return C
 
-    C = wrapper.call_cpp_bmm(A, B)
+    elif A.dtype == int:
+        print("int")
+        C = wrapper.call_cpp_bmm(A,B, 1)
+        return C
+
+    else: 
+        raise Exception("Datatypes do not fit.")
     #C = C.reshape((shapeA[0], shapeA[1], shapeB[2]))
-    return C
-
+    
 
 def create_set(term: str) -> set:
     """Creates a set of all indices that are in the term.
@@ -173,21 +182,6 @@ def read_input_string(string, arrays):
     return sizes
 
 
-def test_bmm():
-    A = np.random.rand(10, 15, 11)
-    B = np.random.rand(10, 11, 24)
-
-    A_t = torch.from_numpy(A)
-    B_t = torch.from_numpy(B)
-    C_torch = torch.bmm(A_t, B_t)
-
-    
-    C =  invoke_bmm(A, B)
-    #A.reshape(-1)
-    #B.reshape(-1)
-    
-    C_t = torch.from_numpy(C)
-    print((C_torch - C_t).sum())
 
 def test_manage_input_strings():
     string = "ijk, kjl  -> zs"
@@ -198,11 +192,8 @@ def test_find_mapping():
     A = np.random.rand(3,4,6,5)
     B = np.random.rand(3,5,6,2)
 
-    At = torch.from_numpy(A)
-    Bt = torch.from_numpy(B)
     
-
-    T = torch.einsum("ijmk, ikln -> ijmln", At,Bt)
+    T = np.einsum("ijmk, ikln -> ijmln", A,B)
     str_A = "ijmk"
     str_B = "ikln"
     str_O = "ijmln"
@@ -214,10 +205,9 @@ def test_find_mapping():
              "n": 2}
 
     U = find_mapping(str_A, str_B, A, B, str_O,sizes)
-    Ut = torch.from_numpy(U)
-
     
-    print((T-Ut).sum())
+    
+    print((T-U).sum())
 
 
 
