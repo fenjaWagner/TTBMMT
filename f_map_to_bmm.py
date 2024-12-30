@@ -43,7 +43,7 @@ def generate_transposed_term(term, batch_terms, sum_terms, case):
     return tuple(term_transpose), new_term, rest_terms
 
 
-def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, full_term_dict, sizes):
+def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, contract, batch, sizes):#full_term_dict, sizes):
     """Maps the contraction of two given tensors to the bmm.
 
     Args:
@@ -57,8 +57,12 @@ def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, full_term_dict, sizes):
         _type_: _description_
     """
     
-    batch_terms = useful_funcs.generate_list_from_set(full_term_dict["batch"])
-    sum_terms = useful_funcs.generate_list_from_set(full_term_dict["contract"])
+    #batch_terms = useful_funcs.generate_list_from_set(full_term_dict["batch"])
+    #sum_terms = useful_funcs.generate_list_from_set(full_term_dict["contract"])
+    batch_terms = useful_funcs.generate_list_from_set(batch)
+    sum_terms = useful_funcs.generate_list_from_set(contract)
+
+
 
     transpose_tuple_1, new_term_1, rest_terms_1 = generate_transposed_term(term_1, batch_terms, sum_terms, "first")
     transpose_tuple_2, new_term_2, rest_terms_2 = generate_transposed_term(term_2, batch_terms, sum_terms, "second")
@@ -99,10 +103,12 @@ def test_mapping_case_normal():
              "l": 6,
              "m": 6,
              "n": 2}
+    batch = {"i"}
+    contract = {"k"}
     full_term_dict = {"batch": {"i"},
                       "contract": {"k"}}
 
-    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
+    U, term = map_to_bmm(str_A, str_B, A, B, contract, batch,sizes)
     print("term: ", term)
     T = np.einsum("ijmk, ikln ->" + term, A,B)
     
@@ -116,9 +122,11 @@ def test_mapping_no_sum():
 
     I = np.array(i, dtype=int)
     J = np.array(j, dtype = int)
+    contract = set()
+    batch =  {"l"}
     full_term_dict = {"batch": {"l"},
                       "contract": set()}
-    O, term = map_to_bmm("li", "lj", I, J, full_term_dict, {"i": 4, "l": 2, "j": 3})
+    O, term = map_to_bmm("li", "lj", I, J, contract, batch, {"i": 4, "l": 2, "j": 3})
     
     C = np.einsum("li,lj ->"+ term, I, J)
 
@@ -143,7 +151,7 @@ def test_mapping_no_batch():
     full_term_dict = {"batch": set(),
                       "contract": {"k"}}
 
-    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
+    U, term = map_to_bmm(str_A, str_B, A, B, {"k"}, set(),sizes)
     print("term: ", term)
     T = np.einsum("ijmk, zkln ->" + term, A,B)
     
@@ -168,7 +176,7 @@ def test_mapping_no_batch_no_sum():
     full_term_dict = {"batch": set(),
                       "contract": set()}
 
-    U, term = map_to_bmm(str_A, str_B, A, B, full_term_dict,sizes)
+    U, term = map_to_bmm(str_A, str_B, A, B, set(), set(),sizes)
     print("term: ", term)
     T = np.einsum("ijmk, zyln ->ijmkzyln", A,B)
    
