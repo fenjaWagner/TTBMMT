@@ -60,5 +60,5 @@ def test_trace():
     
     print((C-D).sum())
 
-#test_trace()
+test_trace()
 
