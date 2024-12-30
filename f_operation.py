@@ -1,4 +1,3 @@
-import torch 
 import numpy as np
 import f_single_engine
 import f_map_to_bmm 
