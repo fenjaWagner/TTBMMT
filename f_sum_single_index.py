@@ -2,11 +2,24 @@ import numpy as np
 import  useful_funcs
 
 
-def build_transpose_new_term(term, single, term_dict):
+#def build_transpose_new_term(term, single, term_dict):
+#    new_term = ""
+#    transpose_term = ""
+#    single_term = ""
+#    for i in term:
+#        if i not in single:
+#            transpose_term += i
+#            new_term += i
+#    for i in single:
+#        transpose_term += i
+#        single_term += i
+#    return transpose_term, new_term, single_term
+
+def build_transpose_new_term(term_dict, single):
     new_term = ""
     transpose_term = ""
     single_term = ""
-    for i in term:
+    for i in term_dict:
         if i not in single:
             transpose_term += i
             new_term += i
@@ -14,6 +27,7 @@ def build_transpose_new_term(term, single, term_dict):
         transpose_term += i
         single_term += i
     return transpose_term, new_term, single_term
+
 
 def transpose_tensor(term, transpose_term, tensor: np.array):
     transpose_tuple = useful_funcs.transpose_tuple(term, transpose_term)
@@ -53,10 +67,12 @@ def sum_entries(A, position, single_size):
     return sum #, position + single_size 
 
 
-def remove_single_index(tensor, tensor_term, tensor_name, full_term_dict, sizes):
+def remove_single_index(tensor, tensor_term, single_chars, sizes): #full_term_dict, sizes):
     term_dict_tensor = useful_funcs.create_index_dict(tensor_term)
     print("term dict in single sum", term_dict_tensor)
-    transpose_term, new_term, single_term = build_transpose_new_term(full_term_dict["term_"+tensor_name], full_term_dict["single_"+tensor_name], term_dict_tensor)
+    #transpose_term, new_term, single_term = build_transpose_new_term(full_term_dict["term_"+tensor_name], full_term_dict["single_"+tensor_name], term_dict_tensor)
+    transpose_term, new_term, single_term = build_transpose_new_term(term_dict_tensor, single_chars)
+    
     tensor = transpose_tensor(tensor_term, transpose_term, tensor)
     tensor = tensor.reshape(-1)
 
@@ -81,6 +97,7 @@ def remove_single_index(tensor, tensor_term, tensor_name, full_term_dict, sizes)
 def test_trace():
     A = np.random.rand(5,5,4,3,5,3)
     A_term = "ijklmn"
+    single_A = {"j", "l", "m"}
     term_dict_full = {"term_A": {"i", "j", "k", "l", "m", "n"},
                       "single_A": {"j", "l", "m"}}
 
@@ -88,13 +105,13 @@ def test_trace():
     for i in range(len(A_term)):
         sizes[A_term[i]] = A.shape[i]
 
-    C, new_term = remove_single_index(A, A_term, "A",term_dict_full,  sizes)
+    C, new_term = remove_single_index(A, A_term,single_A,  sizes)
     print("new_term: ", new_term)
     D = np.einsum("ijklmn->"+new_term, A)
 
     print((C-D).sum())
 
-#test_trace()
+test_trace()
     
 
     
