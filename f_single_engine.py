@@ -8,12 +8,9 @@ import torch
 def manage_single_tensor(tensor, term, tensor_name, full_term_dict, sizes):
     if full_term_dict["double_"+tensor_name]:
         tensor, term = f_single_trace.single_trace(term, tensor, sizes)
-        print("new term double", term)
-        print("shape double", tensor.shape)
         full_term_dict["term_"+tensor_name] = useful_funcs.create_set(term)
     if full_term_dict["single_"+tensor_name]:
         tensor,  term  = f_sum_single_index.remove_single_index(tensor, term, tensor_name, full_term_dict, sizes)
-        print("new term single", term)
         full_term_dict["term_"+tensor_name] = useful_funcs.create_set(term)
 
     return tensor, term, full_term_dict
@@ -43,4 +40,4 @@ def test_manage():
     
     print((Ct-D).sum())
 
-test_manage()
+#test_manage()

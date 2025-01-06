@@ -31,7 +31,6 @@ def build_transpose_new_term(term_dict, single):
 
 def transpose_tensor(term, transpose_term, tensor: np.array):
     transpose_tuple = useful_funcs.transpose_tuple(term, transpose_term)
-    print("transpose_tuple", transpose_tuple)
     tensor = np.ascontiguousarray(np.transpose(tensor, transpose_tuple))
     return tensor
 
@@ -69,7 +68,6 @@ def sum_entries(A, position, single_size):
 
 def remove_single_index(tensor, tensor_term, single_chars, sizes): #full_term_dict, sizes):
     term_dict_tensor = useful_funcs.create_index_dict(tensor_term)
-    print("term dict in single sum", term_dict_tensor)
     #transpose_term, new_term, single_term = build_transpose_new_term(full_term_dict["term_"+tensor_name], full_term_dict["single_"+tensor_name], term_dict_tensor)
     transpose_term, new_term, single_term = build_transpose_new_term(term_dict_tensor, single_chars)
     
@@ -77,7 +75,6 @@ def remove_single_index(tensor, tensor_term, single_chars, sizes): #full_term_di
     tensor = tensor.reshape(-1)
 
     term_dict_transposed = useful_funcs.create_index_dict(transpose_term)
-    print("transpose_dict", term_dict_transposed)
     shape_dict = calculate_shapes(new_term, single_term, transpose_term, sizes)
 
     tensor_new = np.zeros(shape_dict["new_size"])
@@ -111,7 +108,7 @@ def test_trace():
 
     print((C-D).sum())
 
-test_trace()
+#test_trace()
     
 
     
