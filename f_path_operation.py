@@ -54,7 +54,7 @@ def find_single_indices(term_A, term_B, histo):
     contract = set()
     batch = set()
 
-    # build set of chars of term_A, remove them from histo, find singles in A
+    # build set of chars of term_A, remove them from histogramm, find singles in A
     for char in term_A:
         histo[char] -= 1
         set_A.add(char)
