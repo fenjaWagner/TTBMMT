@@ -1,19 +1,7 @@
 import numpy as np
 import  useful_funcs
-
-
-#def build_transpose_new_term(term, single, term_dict):
-#    new_term = ""
-#    transpose_term = ""
-#    single_term = ""
-#    for i in term:
-#        if i not in single:
-#            transpose_term += i
-#            new_term += i
-#    for i in single:
-#        transpose_term += i
-#        single_term += i
-#    return transpose_term, new_term, single_term
+import math 
+import time
 
 def build_transpose_new_term(term_dict, single):
     new_term = ""
@@ -36,19 +24,16 @@ def transpose_tensor(term, transpose_term, tensor: np.array):
 
 
 def generate_shape(term, sizes):
-    shape = []
-    for i in term:
-        shape.append(sizes[i])
-    return tuple(shape)
+    return tuple([sizes[i] for i in term])
 
 def calculate_shapes(new_term, single_term, transpose_term, sizes):
-    new_shape  = generate_shape(new_term, sizes)
-    single_shape = generate_shape(single_term, sizes)
-    transpose_shape = generate_shape(transpose_term, sizes)
-    new_size = useful_funcs.calculate_size(new_term, sizes)
-    single_size = useful_funcs.calculate_size(single_term, sizes)
-    new_shape_sum = useful_funcs.sum_shape(new_shape)
-    transpose_shape_sum = useful_funcs.sum_shape(transpose_shape)
+    new_shape  = tuple([sizes[i] for i in new_term])
+    single_shape = tuple([sizes[i] for i in single_term])
+    transpose_shape = tuple([sizes[i] for i in transpose_term])
+    new_size = math.prod([sizes[i] for i in new_term])
+    single_size = math.prod([sizes[i] for i in single_term])
+    new_shape_sum = [math.prod(new_shape[i+1:]) for i in range(len(new_shape))]
+    transpose_shape_sum = [math.prod(transpose_shape[i+1:]) for i in range(len(transpose_shape))]
 
     return {"new_shape": new_shape, 
             "single_shape": single_shape,
@@ -63,52 +48,29 @@ def sum_entries(A, position, single_size):
     sum = 0
     for i in range(single_size):
         sum += A[position + i]
-    return sum #, position + single_size 
+    return sum 
 
-
-def remove_single_index(tensor, tensor_term, single_chars, sizes): #full_term_dict, sizes):
-    term_dict_tensor = useful_funcs.create_index_dict(tensor_term)
-    #transpose_term, new_term, single_term = build_transpose_new_term(full_term_dict["term_"+tensor_name], full_term_dict["single_"+tensor_name], term_dict_tensor)
+def remove_single_index(tensor, tensor_term, single_chars, sizes):
+    tic = time.time()
+    term_dict_tensor = {char: idx for idx, char in enumerate(tensor_term)}
     transpose_term, new_term, single_term = build_transpose_new_term(term_dict_tensor, single_chars)
     
     tensor = transpose_tensor(tensor_term, transpose_term, tensor)
     tensor = tensor.reshape(-1)
 
-    term_dict_transposed = useful_funcs.create_index_dict(transpose_term)
+    term_dict_transposed = {char: idx for idx, char in enumerate(transpose_term)}
     shape_dict = calculate_shapes(new_term, single_term, transpose_term, sizes)
 
     tensor_new = np.zeros(shape_dict["new_size"])
 
-    iterator = useful_funcs.create_iterator(shape_dict["new_shape"])
+    iterator = np.ndindex(tuple(shape_dict["new_shape"]))
 
     for index in iterator:
         pos_old, pos_new = useful_funcs.calc_positions(index, shape_dict["new_shape_sum"], shape_dict["transpose_shape_sum"], new_term, term_dict_transposed)
         tensor_new[pos_new] = sum_entries(tensor, pos_old, shape_dict["single_size"])
     
     tensor_new = np.ascontiguousarray(tensor_new.reshape(shape_dict["new_shape"]))
+    toc = time.time()
+    print(f"summation time: {toc-tic}")
 
     return tensor_new, new_term
-
-
-
-def test_trace():
-    A = np.random.rand(5,5,4,3,5,3)
-    A_term = "ijklmn"
-    single_A = {"j", "l", "m"}
-    term_dict_full = {"term_A": {"i", "j", "k", "l", "m", "n"},
-                      "single_A": {"j", "l", "m"}}
-
-    sizes = {}
-    for i in range(len(A_term)):
-        sizes[A_term[i]] = A.shape[i]
-
-    C, new_term = remove_single_index(A, A_term,single_A,  sizes)
-    print("new_term: ", new_term)
-    D = np.einsum("ijklmn->"+new_term, A)
-
-    print((C-D).sum())
-
-#test_trace()
-    
-
-    

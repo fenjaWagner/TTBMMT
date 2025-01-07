@@ -48,12 +48,12 @@ def invoke_c_bmm(A: np.array, B: np.array) -> np.array:
     #B = np.ascontiguousarray(B.reshape(-1))
     
     if A.dtype == "double":
-        print("double")
+        #print("double")
         C = wrapper.call_cpp_bmm(A, B, 0)
         return C
 
     elif A.dtype == int:
-        print("int")
+        #print("int")
         C = wrapper.call_cpp_bmm(A,B, 1)
         return C
 

@@ -1,35 +1,47 @@
 import numpy as np
 import useful_funcs
+import math
+from collections import defaultdict
+import time
 import re
 import mm 
 
 
-def create_dict(term):
-    term_dict = {}
-    for i in range(len(term)):
-        if term[i] not in term_dict:
-            term_dict[term[i]] = [i]
-        else: 
-            term_dict[term[i]].append(i)
-    return term_dict
 
-def generate_new_term(term_dict, sizes):
+def create_dict(term):
+    term_dict = defaultdict(list)
+    for i, char in enumerate(term):
+        term_dict[char].append(i)
+    return dict(term_dict)
+
+"""def generate_new_term(term_dict, sizes):
     new_term = ""
     new_shape = []
     for k in term_dict:
         new_term += str(k)
         new_shape.append(sizes[k])
+    return new_term, new_shape"""
+
+def generate_new_term(term_dict, sizes):
+    new_term = ''.join(str(k) for k in term_dict)
+    new_shape = [sizes[k] for k in term_dict]
     return new_term, new_shape
 
 
-def single_trace(term, A, sizes):
+def single_trace(term, A, sizes):#, single_idc, keep_idc):
+    tic = time.time()
+
+    #transpose_term = ''.join(list[keep_idc]+list[single_idc])
+    #transpose_tuple = useful_funcs.transpose_tuple(term, transpose_term)
+    #tensor = np.ascontiguousarray(np.transpose(tensor, transpose_tuple))
+
     term_dict = create_dict(term)
     new_term, new_shape = generate_new_term(term_dict, sizes)
-    iterator = useful_funcs.create_iterator(new_shape)
-    sum_old_shape = useful_funcs.sum_shape(A.shape)
-    sum_new_shape = useful_funcs.sum_shape(new_shape)
+    iterator = np.ndindex(tuple(new_shape))
+    sum_old_shape = [math.prod(A.shape[i+1:]) for i in range(len(A.shape))]
+    sum_new_shape = [math.prod(new_shape[i+1:]) for i in range(len(new_shape))]
 
-    prod = useful_funcs.calc_new_length(new_shape)
+    prod = math.prod(new_shape)
     A_new = np.zeros(prod)
     A = A.reshape(-1)
     
@@ -38,27 +50,6 @@ def single_trace(term, A, sizes):
         A_new[pos_A_new] = A[pos_A_old]
             
     A_new = A_new.reshape(tuple(new_shape))
+    toc = time.time()
+    print(f"trace {toc-tic}")
     return A_new, new_term
-
-
-
-def test_trace():
-    A = np.random.rand(5,5,4,3,5,3)
-    #print(A)
-    #A = np.array([[1,2,3], [3,4,5], [5,6,7]])
-    string = "iikjij"
-
-    sizes = {}
-    for i in range(len(string)):
-        sizes[string[i]] = A.shape[i]
-
-    #B = A.reshape(-1)
-    C, new_term = single_trace(string, A, sizes)
-    print("new_term: ", new_term)
-    D = np.einsum("iikjij->"+new_term, A)
-    
-    
-    print((C-D).sum())
-
-#test_trace()
-

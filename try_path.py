@@ -136,7 +136,7 @@ def rand_equation(n, reg, n_out=0, d_min=2, d_max=9, seed=None, global_dim=False
 
     return ret
 
-format_string, shapes = rand_equation(10, 3, seed=12, d_min=2, d_max=10, n_out=2)
+"""format_string, shapes = rand_equation(10, 3, seed=12, d_min=2, d_max=10, n_out=2)
 #print(format_string)
 #print(shapes)
 tensors = [np.random.rand(*shape) for shape in shapes]
@@ -157,3 +157,4 @@ annoted = einsum_benchmark.meta.runtime.to_annotated_ssa_path(format_string, ssa
 # compute a path using the optimizer with opt_einsum
 #path_info = oe.contract_path(format_string, *tensors, optimize=optimizer)
 #print(path_info)
+"""
