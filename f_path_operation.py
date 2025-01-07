@@ -1,13 +1,9 @@
 import numpy as np
-import f_sum_single_index
-import f_single_trace
 import f_map_to_bmm 
 import try_path as t
-import useful_funcs
 from collections import Counter
 import time
 import opt_einsum as oe
-
 from cgreedy import CGreedy, compute_path
 import einsum_benchmark
 
