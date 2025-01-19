@@ -6,12 +6,12 @@ import ascii
 
 def exp():
     
-    instance = einsum_benchmark.instances["mc_2020_arjun_057"]
+    instance = einsum_benchmark.instances["mc_2022_167"]
     instance_s = einsum_benchmark.instances["mc_2022_079"]
 
     s_opt_size = instance.paths.opt_size
 
-    for backend in ["torch","custom", "numpy"]:
+    for backend in ["custom"]:#["torch","custom", "numpy"]:
         print("************************** "+backend+" *********************************")
         C, term_C, time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
         print("sum[OUTPUT]:", C.sum(), instance.result_sum)
