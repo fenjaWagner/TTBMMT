@@ -10,7 +10,7 @@ typedef struct {
     int64_t      order;         // tensor order (number of modes)
     int64_t*     dimensions;    // tensor dimensions
     void*     vals;
-    DataType     data_type;          // tensor values
+    int     data_type;          // tensor values
 } taco_tensor_t;
 
 int compute(taco_tensor_t *C, taco_tensor_t *A, taco_tensor_t *B) {
@@ -32,12 +32,18 @@ int compute(taco_tensor_t *C, taco_tensor_t *A, taco_tensor_t *B) {
 
     // Initialize tensor C in parallel
 #pragma omp parallel for schedule(static)
-    for (int64_t pC = 0; pC < border; pC++) {
-        if (C->data_type == DOUBLE) {
+    for (int64_t pC = 0; pC < border ; pC++) {
+        if (C->data_type == 0) {
+            ((float*)C_vals)[pC] = 0.0;
+        } else if (C->data_type == 1) {
             ((double*)C_vals)[pC] = 0.0;
-        } else if (C->data_type == INT) {
-            ((int*)C_vals)[pC] = 0;
-        }
+        }else if (C->data_type == 10) {
+            ((int16_t*)C_vals)[pC] = 0;
+        }else if (C->data_type == 11) {
+            ((int32_t*)C_vals)[pC] = 0;
+        }else if (C->data_type == 12) {
+            ((int64_t*)C_vals)[pC] = 0;
+        } 
     }
 
     // Block sizes for tiling (adjust based on L1/L2 cache sizes)
@@ -63,11 +69,17 @@ int compute(taco_tensor_t *C, taco_tensor_t *A, taco_tensor_t *B) {
                                 int64_t jB = kB * B3_dimension + jj;
 
                                 // Update tensor C
-                                if (C->data_type == DOUBLE && A->data_type == DOUBLE && B->data_type == DOUBLE) {
+                                if (C->data_type == 0 && A->data_type == 0 && B->data_type == 0) {
+                                ((float*)C_vals)[jC] += ((float*)A_vals)[kA] * ((float*)B_vals)[jB];
+                                }else if (C->data_type ==1 && A->data_type ==1 && B->data_type ==1) {
                                     ((double*)C_vals)[jC] += ((double*)A_vals)[kA] * ((double*)B_vals)[jB];
-                                } else if (C->data_type == INT && A->data_type == INT && B->data_type == INT) {
-                                    ((int*)C_vals)[jC] += ((int*)A_vals)[kA] * ((int*)B_vals)[jB];
-                                } else {
+                                }else if (C->data_type == 10 && A->data_type == 10 && B->data_type == 10) {
+                                    ((int16_t*)C_vals)[jC] += ((int16_t*)A_vals)[kA] * ((int16_t*)B_vals)[jB];
+                                }else if (C->data_type == 11 && A->data_type == 11 && B->data_type == 11) {
+                                    ((int32_t*)C_vals)[jC] += ((int32_t*)A_vals)[kA] * ((int32_t*)B_vals)[jB];
+                                } else if (C->data_type == 12 && A->data_type == 12 && B->data_type == 12) {
+                                    ((int64_t*)C_vals)[jC] += ((int64_t*)A_vals)[kA] * ((int64_t*)B_vals)[jB];
+                                }else {
                                     fprintf(stderr, "Error: Data type mismatch.\n");
                                 }
                             }

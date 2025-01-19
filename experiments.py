@@ -6,7 +6,7 @@ import ascii
 
 def exp():
     
-    instance = einsum_benchmark.instances["mc_2022_167"]
+    instance = einsum_benchmark.instances["mc_2023_arjun_117"]
     instance_s = einsum_benchmark.instances["mc_2022_079"]
 
     s_opt_size = instance.paths.opt_size
@@ -25,6 +25,17 @@ def exp():
     #str_matrix_chain_multiplication_100
     
     
+
+def exp_dtypes():
+    format_string = "aaabbbcc, cddeef -> cad"
+    A = np.random.rand(3,3,3,4,4,4,2,2)
+    B = np.random.rand(2,3,3,4,4,5)
+    C = np.einsum(format_string, A, B)
+    for ty in [np.int16, np.int32, np.int64, np.float32, np.float64]:
+        print(f"************************** {ty} *************************************" )
+        C_c, term_C, time = fo.work_path([(0,1)], [A,B], format_string, "custom")
+        print("time: ", time)
+        print(np.allclose(C, C_c))
 
 
 

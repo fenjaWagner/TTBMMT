@@ -5,8 +5,6 @@ import ascii
 import try_path as t
 from collections import Counter
 import time
-import opt_einsum as oe
-from cgreedy import CGreedy, compute_path
 import einsum_benchmark
 
 def build_sizes(term_A, term_B, shape_A, shape_B):

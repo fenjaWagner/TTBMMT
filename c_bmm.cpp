@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <omp.h>
-#define DTYPE double
 
 extern "C" {
 //typedef enum { DOUBLE, INT } DataType;
@@ -43,7 +42,7 @@ int compute(taco_tensor_t *C, taco_tensor_t *A, taco_tensor_t *B) {
         } 
     }
 
-#pragma omp parallel for schedule(runtime)
+#pragma omp parallel for schedule(static)
     for (int64_t b = 0; b < B1_dimension; b++) {
         for (int64_t i = 0; i < A2_dimension; i++) {
             int64_t iC = b * C2_dimension + i;
