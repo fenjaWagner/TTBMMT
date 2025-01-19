@@ -46,13 +46,23 @@ def invoke_c_bmm(A: np.array, B: np.array) -> np.array:
     #C = np.zeros((A.shape[0]* A.shape[1]* B.shape[2]))
     #A = np.ascontiguousarray(A.reshape(-1))
     #B = np.ascontiguousarray(B.reshape(-1))
+    dtype_dict = {np.dtype('float32'):0,
+                  np.dtype('float64') : 1,
+                  np.dtype('int16'): 10,
+                  np.dtype('int32'): 11,
+                  np.dtype('int64') : 12,
+                  np.complex64: 20,
+                  np.complex128: 21}
     
-    if A.dtype == "double":
+    C = wrapper.call_cpp_bmm(A, B, dtype_dict[A.dtype])
+    return C
+    
+    if A.dtype == np.float32:
         #print("double")
         C = wrapper.call_cpp_bmm(A, B, 0)
         return C
 
-    elif A.dtype == int:
+    elif A.dtype == np.float:
         #print("int")
         C = wrapper.call_cpp_bmm(A,B, 1)
         return C

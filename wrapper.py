@@ -23,17 +23,25 @@ libbmm.compute.restype = ctypes.c_int
 
 # Helper function to wrap taco_tensor_t
 def call_cpp_bmm(A: np.array, B: np.array, data_t: int) -> np.array:
+    dtype_dict = {0: np.float32,
+                  1: np.float64,
+                  10: np.int16,
+                  11: np.int32,
+                  12: np.int64,
+                  20: np.complex64,
+                  21: np.complex128}
     # Prepare data
+    data_type = dtype_dict[data_t]
     shape_A = np.array(A.shape, dtype=np.int64)
     shape_B = np.array(B.shape, dtype=np.int64)
-    C = np.zeros((A.shape[0], A.shape[1], B.shape[2]), dtype=np.float64)
+    C = np.zeros((A.shape[0], A.shape[1], B.shape[2]), dtype=data_type)
 
     shape_C = np.array(C.shape, dtype=np.int64)
     
     # Flatten arrays
-    A = np.ascontiguousarray(A, dtype=np.float64).flatten()
-    B = np.ascontiguousarray(B, dtype=np.float64).flatten()
-    C = np.ascontiguousarray(C, dtype=np.float64).flatten()
+    A = np.ascontiguousarray(A, dtype=data_type).flatten()
+    B = np.ascontiguousarray(B, dtype=data_type).flatten()
+    C = np.ascontiguousarray(C, dtype=data_type).flatten()
 
     # Wrap tensors in TacoTensor
     tensor_A = TacoTensor(
