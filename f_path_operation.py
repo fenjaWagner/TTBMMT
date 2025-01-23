@@ -89,8 +89,12 @@ def prepare_contraction(term_A, term_B, A,B,histo, backend = "custom"):
     C, term_C = method(A, B,term_A, term_B, batch, contract, keep_A, keep_B)#, flag_A, flag_B)
     return C, ascii.convert_ascii_back([term_C], char_dict)[0]
 
+def Cloning(li1):
+    li_copy = li1[:]
+    return li_copy
 
-def work_path(path, tensors, format_string, backend = "custom"):
+def work_path(path, tensors_t, format_string, backend = "custom"):
+    tensors = Cloning(tensors_t)
     ssa_path = einsum_benchmark.meta.runtime.to_ssa_path(path)
     format_string = format_string.replace(" ", "")
     histogramm = Counter(format_string)
