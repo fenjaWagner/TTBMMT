@@ -1,20 +1,21 @@
 #import opt_einsum as oe
 import einsum_benchmark
-import f_path_operation as fo
+import f_path_operation_copy as fo
 import numpy as np
 import ascii
 
 def exp():
     
-    instance = einsum_benchmark.instances["mc_2021_027"]
+    instance = einsum_benchmark.instances["lm_batch_likelihood_sentence_4_8d"]
     instance_s = einsum_benchmark.instances["mc_2022_079"]
 
     s_opt_size = instance.paths.opt_size
 
     #for backend in ["custom"]:
-    for backend in ["torch","custom", "numpy"]:
+    for backend in ["torch","custom", "numpy", "np_mm"]:
         print("************************** "+backend+" *********************************")
-        C, term_C, time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+        #C, term_C, time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+        C,time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
         print("sum[OUTPUT]:", C.sum(), instance.result_sum)
         print("time: ", time)
 
