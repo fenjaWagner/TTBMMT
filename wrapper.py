@@ -2,7 +2,7 @@ import numpy as np
 import ctypes
 
 # Load the shared library
-libbmm = ctypes.CDLL('./blocked_libbmm.so')  # Use './bmm.dll' on Windows
+libbmm = ctypes.CDLL('./bmm_libbmm.so')  
 
 # Define the TacoTensor structure
 class TacoTensor(ctypes.Structure):
@@ -10,7 +10,7 @@ class TacoTensor(ctypes.Structure):
         ('order', ctypes.c_int64),
         ('dimensions', ctypes.POINTER(ctypes.c_int64)),
         ('vals', ctypes.c_void_p),
-        ('data_type', ctypes.c_int)  # DOUBLE = 0, INT = 1
+        ('data_type', ctypes.c_int)
     ]
 
 # Define the compute function signature
@@ -22,16 +22,20 @@ libbmm.compute.argtypes = [
 libbmm.compute.restype = ctypes.c_int
 
 # Helper function to wrap taco_tensor_t
-def call_cpp_bmm(A: np.array, B: np.array, data_t: int) -> np.array:
-    dtype_dict = {0: np.float32,
-                  1: np.float64,
-                  10: np.int16,
-                  11: np.int32,
-                  12: np.int64,
-                  20: np.complex64,
-                  21: np.complex128}
+def call_cpp_bmm(A: np.array, B: np.array) -> np.array:
+
+    data_type = A.dtype
+    if B.dtype != data_type:
+        raise Exception(f"Data Types don't match.")
+    dtype_dict = {np.dtype('float32'):0,
+                  np.dtype('float64') : 1,
+                  np.dtype('int16'): 10,
+                  np.dtype('int32'): 11,
+                  np.dtype('int64') : 12,
+                  np.complex64: 20,
+                  np.complex128: 21}
     # Prepare data
-    data_type = dtype_dict[data_t]
+    data_int = dtype_dict[data_type]
     shape_A = np.array(A.shape, dtype=np.int64)
     shape_B = np.array(B.shape, dtype=np.int64)
     C = np.zeros((A.shape[0], A.shape[1], B.shape[2]), dtype=data_type)
@@ -48,21 +52,21 @@ def call_cpp_bmm(A: np.array, B: np.array, data_t: int) -> np.array:
         order=3,
         dimensions=shape_A.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
         vals=A.ctypes.data_as(ctypes.c_void_p),
-        data_type = data_t  # DOUBLE = 0
+        data_type = data_int  
     )
 
     tensor_B = TacoTensor(
         order=3,
         dimensions=shape_B.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
         vals=B.ctypes.data_as(ctypes.c_void_p),
-        data_type= data_t  # DOUBLE = 0
+        data_type= data_int  
     )
 
     tensor_C = TacoTensor(
         order=3,
         dimensions=shape_C.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
         vals=C.ctypes.data_as(ctypes.c_void_p),
-        data_type= data_t # DOUBLE = 0
+        data_type= data_int 
     )
 
     # Call the compute function

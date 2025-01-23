@@ -1,4 +1,4 @@
-import opt_einsum as oe
+#import opt_einsum as oe
 import einsum_benchmark
 import f_path_operation as fo
 import numpy as np
@@ -6,23 +6,30 @@ import ascii
 
 def exp():
     
-    instance = einsum_benchmark.instances["mc_2023_arjun_117"]
+    instance = einsum_benchmark.instances["mc_2021_027"]
     instance_s = einsum_benchmark.instances["mc_2022_079"]
 
     s_opt_size = instance.paths.opt_size
 
-    for backend in ["custom"]:#["torch","custom", "numpy"]:
+    #for backend in ["custom"]:
+    for backend in ["torch","custom", "numpy"]:
         print("************************** "+backend+" *********************************")
         C, term_C, time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
         print("sum[OUTPUT]:", C.sum(), instance.result_sum)
         print("time: ", time)
 
-    #"mc_2023_arjun_117"
-    #"mc_2021_027"
-    #"mc_2020_082"
-    #"lm_batch_likelihood_sentence_4_8d"
-    #lm_batch_likelihood_sentence_3_12d
-    #str_matrix_chain_multiplication_100
+    #"mc_2023_arjun_117" -> 23 s, np 200
+    #"mc_2021_027"0.5, 0.9, 10.7
+    #"mc_2020_082" zu groß
+    #mc_2022_079 0.3, 0.46, 0.21
+
+    #"lm_batch_likelihood_sentence_4_8d", 0.8, 27.2, 11.7
+    #lm_batch_likelihood_sentence_3_12d -> 0.2, 4.2, 1,5
+    #mc_rw_blasted_case1_b14_even3 custom: killed
+    # mc_2021_arjun_171 custom: killed
+    # wmc_2021_130 torch: killed
+    # wmc_2023_035 0.9, 1.1, 0.6
+
     
     
 

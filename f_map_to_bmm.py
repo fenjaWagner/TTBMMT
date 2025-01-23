@@ -1,9 +1,8 @@
-#import torch 
 import numpy as np
-import mm 
-import useful_funcs
 import math
 import time
+import wrapper
+
 
 
 def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, contract_idcs, batch_idcs, keep_1_idcs, keep_2_idcs, sizes):#full_term_dict, sizes):
@@ -41,7 +40,7 @@ def map_to_bmm(term_1, term_2, Tensor_1, Tensor_2, contract_idcs, batch_idcs, ke
     Tensor_1 = np.ascontiguousarray((Tensor_1).reshape((size_batch, size_rest_1, size_sum )))
     Tensor_2 = np.ascontiguousarray((Tensor_2).reshape((size_batch, size_sum, size_rest_2)))
      
-    O_Tensor = mm.invoke_c_bmm(Tensor_1, Tensor_2)
+    O_Tensor = wrapper.call_cpp_bmm(Tensor_1, Tensor_2)
     term_O = batch_idcs + keep_1_idcs + keep_2_idcs
 
     size_o = tuple([sizes[i] for i in term_O])

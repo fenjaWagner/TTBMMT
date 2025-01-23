@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import f_map_to_bmm 
 import ascii
-import try_path as t
 from collections import Counter
 import time
 import einsum_benchmark
@@ -38,24 +37,24 @@ def prepare_indices(term_A, term_B,  histo):
 
     if not (batch or contract or keep_A):
         keep_A = set_A
-        flag_A = True
+        #flag_A = True
     if not (batch or contract or keep_B):
         keep_B = set_B
-        flag_B = True
+        #flag_B = True
     
     for char in batch.union(keep_A,keep_B):
         histo[char] += 1
         output_set.add(char)
     histo["set_O"] = output_set
    
-    string_list = [''.join(set_l) for set_l in [batch, contract, keep_A, keep_B]]
+    #string_list = [''.join(set_l) for set_l in [batch, contract, keep_A, keep_B]]
     
     
-    return [''.join(set_l) for set_l in [batch, contract, keep_A, keep_B]] + [flag_A, flag_B]
+    return [''.join(set_l) for set_l in [batch, contract, keep_A, keep_B]] #+ [flag_A, flag_B]
     
 
 
-def invoke_contraction_torch(A, B, term_A, term_B, batch, contract, keep_A, keep_B, flag_A = False, flag_B = False):
+def invoke_contraction_torch(A, B, term_A, term_B, batch, contract, keep_A, keep_B):#, flag_A = False, flag_B = False):
     output = batch+keep_A+keep_B
     format_string = term_A +','+term_B+"->"+output
     A_t = torch.from_numpy(A)
@@ -63,13 +62,13 @@ def invoke_contraction_torch(A, B, term_A, term_B, batch, contract, keep_A, keep
     C = (torch.einsum(format_string, A_t, B_t)).numpy()
     return C, output
 
-def invoke_contraction_numpy(A, B, term_A, term_B, batch, contract, keep_A, keep_B, flag_A = False, flag_B = False):
+def invoke_contraction_numpy(A, B, term_A, term_B, batch, contract, keep_A, keep_B):#, flag_A = False, flag_B = False):
     output = batch+keep_A+keep_B
     format_string = term_A +','+term_B+"->"+output
     C = np.einsum(format_string, A, B)
     return C, output
 
-def invoke_contraction_custom( A, B, term_A, term_B, batch, contract, keep_A, keep_B, flag_A, flag_B):
+def invoke_contraction_custom( A, B, term_A, term_B, batch, contract, keep_A, keep_B):#, flag_A, flag_B):
     sizes = build_sizes(term_A, term_B, A.shape, B.shape)
     C, term_C = f_map_to_bmm.map_to_bmm(term_A, term_B, A, B, contract, batch, keep_A, keep_B, sizes)
     
@@ -84,14 +83,12 @@ def prepare_contraction(term_A, term_B, A,B,histo, backend = "custom"):
                "torch": invoke_contraction_torch,
                "numpy": invoke_contraction_numpy}
     method = methods[backend]
-    [batch, contract, keep_A, keep_B, flag_A, flag_B] = prepare_indices(term_A, term_B, histo)
+    #[batch, contract, keep_A, keep_B, flag_A, flag_B] = prepare_indices(term_A, term_B, histo)
+    [batch, contract, keep_A, keep_B] = prepare_indices(term_A, term_B, histo)
     [term_A, term_B, batch, contract, keep_A, keep_B ], char_dict = ascii.convert_to_ascii([ term_A, term_B,batch, contract, keep_A, keep_B])
-    C, term_C = method(A, B,term_A, term_B, batch, contract, keep_A, keep_B, flag_A, flag_B)
+    C, term_C = method(A, B,term_A, term_B, batch, contract, keep_A, keep_B)#, flag_A, flag_B)
     return C, ascii.convert_ascii_back([term_C], char_dict)[0]
 
-
-
-    
 
 def work_path(path, tensors, format_string, backend = "custom"):
     ssa_path = einsum_benchmark.meta.runtime.to_ssa_path(path)
