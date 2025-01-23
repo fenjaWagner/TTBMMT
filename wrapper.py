@@ -2,7 +2,7 @@ import numpy as np
 import ctypes
 
 # Load the shared library
-libbmm = ctypes.CDLL('./bmm_libbmm.so')  
+libbmm = ctypes.CDLL('./t_libbmm.so')  
 
 # Define the TacoTensor structure
 class TacoTensor(ctypes.Structure):
