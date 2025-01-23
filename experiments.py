@@ -1,21 +1,23 @@
 #import opt_einsum as oe
 import einsum_benchmark
+import f_path_operation as fop
 import f_path_operation_copy as fo
 import numpy as np
 import ascii
 
 def exp():
     
-    instance = einsum_benchmark.instances["lm_batch_likelihood_sentence_4_8d"]
+    instance = einsum_benchmark.instances["lm_batch_likelihood_sentence_3_12d"]
     instance_s = einsum_benchmark.instances["mc_2022_079"]
 
     s_opt_size = instance.paths.opt_size
 
-    #for backend in ["custom"]:
-    for backend in ["torch","custom", "numpy", "np_mm"]:
+    for backend in ["custom"]:
+    #"torch","custom", "numpy", "np_mm"
+    #for backend in ["custom","torch", "numpy", "np_mm"]:
         print("************************** "+backend+" *********************************")
         #C, term_C, time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
-        C,time = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+        C,term_C, time = fop.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
         print("sum[OUTPUT]:", C.sum(), instance.result_sum)
         print("time: ", time)
 
@@ -32,7 +34,17 @@ def exp():
     # wmc_2023_035 0.9, 1.1, 0.6
 
     
+def blocks():
     
+    instance = einsum_benchmark.instances["lm_batch_likelihood_sentence_3_12d"]
+
+    s_opt_size = instance.paths.opt_size
+    clock = 0
+    for i in range(5):
+        C,term_C, time = fop.work_path(s_opt_size.path, instance.tensors, instance.format_string, "custom")
+        print(time)
+        clock += time
+    print("time", clock/5)
 
 def exp_dtypes():
     format_string = "aaabbbcc, cddeef -> cad"
@@ -60,4 +72,4 @@ def test_ascii():
     f_list = ascii.convert_ascii_back(f_list_new, char_dict)
     print(f_list)
 
-exp()
+blocks()
