@@ -41,7 +41,12 @@ def map_to_bmm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):#full_term_dic
     contract_idcs = ''.join(contract)
     keep_1_idcs = ''.join(keep_1)
     keep_2_idcs = ''.join(keep_2)"""
+    print(f"Term_1 {term_1}, Term_2 {term_2}, Term_O {term_O}")
     batch_idcs, contract_idcs, keep_1_idcs, keep_2_idcs = prepare_indices(term_1, term_2, term_O)
+    print(f"o_1 {keep_1_idcs}")
+    print(f"o_2 {contract_idcs}")
+    print(f"Shape_1 {Tensor_1.shape}, Shape_2 {Tensor_2.shape}")
+    print(f"sizes {sizes}")
     result_type = np.result_type(Tensor_1)
     if np.result_type(Tensor_2) != result_type:
         Tensor_2.astype(result_type)
@@ -50,6 +55,7 @@ def map_to_bmm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):#full_term_dic
     size_sum = math.prod([sizes[i] for i in contract_idcs])
     size_rest_1 = math.prod([sizes[i] for i in keep_1_idcs])
     size_rest_2 = math.prod([sizes[i] for i in keep_2_idcs])
+    print(f"batch {size_batch}, contract {size_sum}, rest_1 {size_rest_1}, rest_2 {size_rest_2}")
 
     if term_1:
         Tensor_1 = np.einsum(term_1 +'->'+batch_idcs+keep_1_idcs+contract_idcs, Tensor_1)

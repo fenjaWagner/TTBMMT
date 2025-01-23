@@ -59,17 +59,23 @@ def prepare_contraction(mini_f_string, A,B, backend = "custom"):
     C = method(A, B,mini_f_string)#, flag_A, flag_B)
     return C
 
+def Cloning(li1):
+    li_copy = li1[:]
+    return li_copy
 
-def work_path(path, tensors, format_string, backend = "custom"):
+def work_path(path, tensors_t, format_string, backend = "custom"):
     ssa_path = einsum_benchmark.meta.runtime.to_ssa_path(path)
+    tensors = Cloning(tensors_t)
     format_string = format_string.replace(" ", "")
     annotated_path = einsum_benchmark.meta.runtime.to_annotated_ssa_path(format_string, ssa_path, True)
     input, output = format_string.split("->")
     tic = time.time()
     for t_tuple in annotated_path:
+        print("*"*30)
         first = t_tuple[0]
         second = t_tuple[1]
         mini_f_string = t_tuple[2]
+        print("mini_f_string", mini_f_string)
         A = tensors[first]
         B = tensors[second]
         C= prepare_contraction(mini_f_string, A, B, backend)
