@@ -72,7 +72,7 @@ def work_path(path, tensors_t, format_string, backend = "custom"):
     tensors = tensors_t.copy()
     format_string = format_string.replace(" ", "")
     annotated_path = einsum_benchmark.meta.runtime.to_annotated_ssa_path(format_string, ssa_path, True)
-    input, output = format_string.split("->")
+    #input, output = format_string.split("->")
     tic = time.time()
     time_fragment = 0
     for t_tuple in annotated_path:

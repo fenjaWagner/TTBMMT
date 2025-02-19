@@ -4,17 +4,33 @@ import einsum_benchmark
 import f_path_operation_copy as fo
 import numpy as np
 import ascii
+import cgreedy
+import csv
+
+def initialize_writing(backend):
+    """Writes the given data to a CSV file."""
+    with open(backend+".csv", mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Flops", "Max_Size", "Time", "Difference"])
+
+def append_results_to_csv(backend, data):
+    """Appends the given data to a CSV file without removing previous entries."""
+    with open(backend+".csv", mode='a', newline='') as file:
+        writer = csv.writer(file)
+        for row in data:
+            writer.writerow(row)
+
 
 def exp():
-    i_list = ["lm_batch_likelihood_sentence_4_8d", "lm_batch_likelihood_sentence_3_12d", "wmc_2023_035", "mc_2021_027", "mc_2022_079"]
-
+    #i_list = ["lm_batch_likelihood_sentence_4_8d", "lm_batch_likelihood_sentence_3_12d", "wmc_2023_035", "mc_2021_027", "mc_2022_079"]
+    i_list = ["lm_batch_likelihood_sentence_4_8d"]
     for stri in i_list:
         print(f"*************************************** {stri} *******************************")
 
         instance = einsum_benchmark.instances[stri]
         s_opt_size = instance.paths.opt_size
         
-        for backend in ["torch","custom", "numpy", "np_mm"]:
+        for backend in ["torch", "custom", "numpy", "np_mm"]:
             C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
             
             print(f"backend {backend} + time {time} + fragment_time {time_fragment} + difference {time-time_fragment}")
@@ -69,5 +85,66 @@ def test_ascii():
 
     f_list = ascii.convert_ascii_back(f_list_new, char_dict)
     print(f_list)
+
+
+def generate_random_problem(number_of_tensors, max_order, edge_order, number_of_selfe_edges,selfe_edge_order, number_of_single_summation_indices, min, max ):
+    format_string, shapes= einsum_benchmark.generators.random.connected_hypernetwork(number_of_tensors = number_of_tensors, 
+                                                                                            regularity = 3.5,
+                                                                                            max_tensor_order = max_order,
+                                                                                            max_edge_order = edge_order,
+                                                                                            diagonals_in_hyper_edges= True,
+                                                                                            number_of_output_indices = 0,
+                                                                                            max_output_index_order = 3,
+                                                                                            diagonals_in_output_indices = False,
+                                                                                            number_of_self_edges = number_of_selfe_edges,
+                                                                                            max_self_edge_order = selfe_edge_order,
+                                                                                            number_of_single_summation_indices= number_of_single_summation_indices,
+                                                                                            global_dim = False,
+                                                                                            min_axis_size = min,
+                                                                                            max_axis_size = max,
+                                                                                            seed= None,
+                                                                                            return_size_dict= False)
+    tensors = []
+    for shape in shapes:
+        tensors.append(np.random.random_sample(shape))
+    
+    format_string = format_string.replace(" ", "")
+    
+    path, size_log2, flops_log10 = cgreedy.compute_path(format_string, *tensors, seed=1, minimize="size", max_repeats=1024,
+                                            max_time=1.0, progbar=True, threshold_optimal=12, threads=0, is_linear=True)
+    
+    
+    return format_string, tensors, path, size_log2, flops_log10
+    
+    
+
+def generate_random_experiments():
+
+    for backend in ["torch", "custom", "numpy", "np_mm"]:
+        initialize_writing(backend)
+
+    succesful = 0
+    unsuccesful = 0
+    big_ones = []
+
+    for max_order in range(5,15):
+        print(max_order)
+        for i in range(20):
+            try: 
+                format_string, tensors, path, size_log2, flops_log10 = generate_random_problem(number_of_tensors = 15, max_order = max_order, edge_order = 4, number_of_selfe_edges = 4, selfe_edge_order = 4, number_of_single_summation_indices = 3, min = 2, max = 10)
+                if flops_log10 > 20:
+                    big_ones.append((format_string, tensors, path, size_log2, flops_log10))
+                for backend in ["torch", "custom", "numpy", "np_mm"]:
+                    C, time, time_fragment = fo.work_path(path, tensors, format_string, backend)
+                        
+                    #print(f"backend {backend} + time {time} + fragment_time {time_fragment} + difference {time-time_fragment}")
+                    with open(backend+".csv", mode='a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([flops_log10, size_log2, time, time-time_fragment])
+                            
+                succesful += 1
+            except:
+                print("too big")
+
 
 exp()
