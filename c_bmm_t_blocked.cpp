@@ -47,31 +47,31 @@ class Calc_Bmm {
     const int blockA =16; // Block size for A2_dimension
     const int blockC =16; // Block size for C3_dimension
 
-#pragma omp parallel for schedule(static)
+    int64_t problem_size = B1_dimension * A2_dimension * C3_dimension * A3_dimension;
+
+#pragma omp parallel for schedule(static) if(problem_size > 1000000)
     for (int64_t pC = 0; pC < border ; pC++) {
             ((T *)C_vals)[pC] = 0.0;
     }
 
-#pragma omp parallel for collapse(3) schedule(static)
-    for (int64_t b = 0; b < B1_dimension; b += blockB) {
+#pragma omp parallel for collapse(3) schedule(static) if(problem_size > 1000000)
+    for (int64_t b = 0; b < B1_dimension; b++) {
         for (int64_t i = 0; i < A2_dimension; i += blockA) {
             for (int64_t j = 0; j < C3_dimension; j += blockC) {
                 // Blocked computation
-                for (int64_t bb = b; bb < b + blockB && bb < B1_dimension; bb++) {
                     for (int64_t ii = i; ii < i + blockA && ii < A2_dimension; ii++) {
-                        int64_t iC = bb * C2_dimension + ii;
-                        int64_t iA = bb * A2_dimension + ii;
+                        int64_t iC = b * C2_dimension + ii;
+                        int64_t iA = b * A2_dimension + ii;
                         for (int64_t jj = j; jj < j + blockC && jj < C3_dimension; jj++) {
                             int64_t jC = iC * C3_dimension + jj;
                             for (int64_t k = 0; k < B2_dimension; k++) {
                                 int64_t kA = iA * A3_dimension + k;
-                                int64_t kB = bb * B2_dimension + k;
+                                int64_t kB = b * B2_dimension + k;
                                 int64_t jB = kB * B3_dimension + jj;
                                 ((T *)C_vals)[jC] += ((T *)A_vals)[kA] * ((T *)B_vals)[jB];
                             }
                         }
                     }
-                }
             }
         }
     }
