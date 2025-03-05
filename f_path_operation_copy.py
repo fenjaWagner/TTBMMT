@@ -67,7 +67,7 @@ def prepare_contraction(mini_f_string, A,B, backend = "custom"):
     return C, time_fragment
 
 
-def work_path(path, tensors_t, format_string, backend = "custom"):
+def work_path_d(path, tensors_t, format_string, backend = "custom"):
     ssa_path = einsum_benchmark.meta.runtime.to_ssa_path(path)
     tensors = tensors_t.copy()
     format_string = format_string.replace(" ", "")
@@ -86,6 +86,33 @@ def work_path(path, tensors_t, format_string, backend = "custom"):
         tensors.append(C)
         
     toc = time.time()
+    
+    return C, toc-tic, time_fragment
+
+def work_path(path, tensors, format_string, backend = "custom"):
+    ssa_path = einsum_benchmark.meta.runtime.to_ssa_path(path)
+    format_string = format_string.replace(" ", "")
+    annotated_path = einsum_benchmark.meta.runtime.to_annotated_ssa_path(format_string, ssa_path, True)
+    length = len(tensors)
+    #input, output = format_string.split("->")
+    tic = time.time()
+    time_fragment = 0
+    for t_tuple in annotated_path:
+        first = t_tuple[0]
+        second = t_tuple[1]
+        mini_f_string = t_tuple[2]
+        A = tensors[first]
+        B = tensors[second]   
+        C, time_fragment_tmp = prepare_contraction(mini_f_string, A, B, backend)
+        if first >= length:
+            A = np.empty((1,), dtype=np.float32) 
+        if second >= length:
+            B = np.empty((1,), dtype=np.float32) 
+        time_fragment += time_fragment_tmp
+        tensors.append(C)
+        
+    toc = time.time()
+    tensors = tensors[:length]
     
     return C, toc-tic, time_fragment
 
