@@ -6,6 +6,7 @@ import numpy as np
 import ascii
 import cgreedy
 import csv
+import json
 
 def initialize_writing(backend):
     """Writes the given data to a CSV file."""
@@ -20,20 +21,27 @@ def append_results_to_csv(backend, data):
         for row in data:
             writer.writerow(row)
 
+def save_dictionary(filename, data):
+    """Save a dictionary to a JSON file."""
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
 
 def exp():
     #i_list = ["lm_batch_likelihood_sentence_4_8d", "lm_batch_likelihood_sentence_3_12d", "wmc_2023_035", "mc_2021_027", "mc_2022_079"]
-    i_list = ["lm_batch_likelihood_sentence_3_12d"]
+    i_list = ["mc_2022_167"]
     for stri in i_list:
         print(f"*************************************** {stri} *******************************")
 
         instance = einsum_benchmark.instances[stri]
         s_opt_size = instance.paths.opt_size
-        
-        for backend in ["torch", "custom", "numpy", "np_mm"]:
+        dict = {}
+        for backend in ["np_mm", "custom"]:#, "custom", "numpy", "np_mm"]:
             C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
             
-            print(f"backend {backend} + time {time} + fragment_time {time_fragment} + difference {time-time_fragment}")
+            print(f"backend {backend} + time {time} + fragment_time {time_fragment} + difference {time-time_fragment}, sum {C.sum()}, instance_s {instance.result_sum}")
+            dict[backend] = {"time": time,
+                             "fragment_time": time_fragment}
+        #save_dictionary("dict_mc_2022_167.txt")
 
 
         #"mc_2023_arjun_117" -> 23 s, np 200
@@ -103,7 +111,7 @@ def benchmark_experiments():
             print("killed on the way")
             
 
-benchmark_experiments()
+exp()
 
 
 
