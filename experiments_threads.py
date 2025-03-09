@@ -59,6 +59,7 @@ def main():
             
         else:
             data[instance_name][backend] = time
+            data[instance_name][backend+"_tf"] = time_fragment
             print(time)
         
         save_dictionary(file_name, data)
