@@ -1,103 +1,74 @@
-import numpy as np
-import f_path_operation_copy as fo
-import time
-import math
-import csv
+import json
 import sys
+import einsum_benchmark
+import f_path_operation_copy as fo
 
-def initialize_writing(filename):
-    """Writes the given data to a CSV file."""
-    with open(filename, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["flops_log10", "size", "custom", "np_mm", "numpy", "torch"])
+def load_dictionary(filename):
+    """Load a dictionary from a JSON file."""
+    try:
+        with open(filename, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"Warning: {filename} not found. Creating a new dictionary.")
+        return {}  # Return an empty dictionary if file doesn't exist
 
-def append_results_to_csv(filename, data):
-    """Appends the given data to a CSV file without removing previous entries."""
-    with open(filename, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        for row in data:
-            writer.writerow(row)
+def save_dictionary(filename, data):
+    """Save a dictionary to a JSON file."""
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
 
-def do_contraction(format_string, tensor_1, tensor_2, times):
-    # *************** Warm up ****************************************
-    C, time_fragment = fo.prepare_contraction(format_string, tensor_1, tensor_2, "torch")
+def main():
+    # Get filename from command-line argument
+    if len(sys.argv) < 4:
+        print("Usage: python my_script.py <dict_file.json>")
+        sys.exit(1)
+    
+    instance_index = int(sys.argv[1])
+    backend_index = int(sys.argv[2])
+    thread_number = int(sys.argv[3])
+    file_name = f"{thread_number}_threads.txt"
 
-    for backend in ["custom", "np_mm", "numpy", "torch"]:
-        tic = time.time()
-        C, time_fragment = fo.prepare_contraction(format_string, tensor_1, tensor_2, backend)
-        toc = time.time()
+    # Load existing dictionary
+    data = load_dictionary(file_name)
+    
+    instance_list = ["mc_2020_arjun_046", "lm_batch_likelihood_sentence_4_8d"]
+    backend_list = ["custom", "np_mm", "torch"]
+
+    instance_name = instance_list[instance_index]
+    backend = backend_list[backend_index]
+
+    instance = einsum_benchmark.instances[instance_name]
+    s_opt_size = instance.paths.opt_size
+    flops = s_opt_size.flops
+    size = s_opt_size.size
+    if instance_name in data.keys():
+        data[instance_name][backend] = None
+    else: 
+        data[instance_name] = {backend: None,
+                               "threads": thread_number,
+                               "size": size}
+    save_dictionary(file_name, data)
+    
+    print(backend)
+    print(instance_name)
+    try: 
+        C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
         if backend == "torch":
-            times.append(time_fragment)
+            data[instance_name][backend] = time_fragment
+            print(time_fragment)
             
         else:
-            times.append(toc-tic)
-    return times
-
-def exp_float_unopt(num_threads):
-    initialize_writing(str(num_threads)+"data_flops_unopt.csv")
-    for i in range(50,54,1):
-        print(f"************** doing {i} **************")
+            data[instance_name][backend] = time
+            print(time)
         
-        [A,B,C,D,E,F] = [i,i,i,i,i,i]
-        size = np.log2(math.prod([A,B,C,D]) + math.prod([A,D,E,F]))
-        flops = np.log10(math.prod([A,B,C,D,E,F])*2)
-        times = [flops, size]
-         
-        tensor_1 = np.random.rand(A, B, C, D)
-        tensor_2 = np.random.rand(A, D, E, F)
-        format_string = "abcd,adef->dcbef"
+        save_dictionary(file_name, data)
 
-        times = do_contraction(format_string, tensor_1, tensor_2, times)
- 
-        append_results_to_csv(str(num_threads)+"data_flops_unopt.csv",[times]) 
-       
-def exp_float(num_threads):
-    initialize_writing(str(num_threads)+"data_flops.csv")
-    for i in range(50,54,1):
-        print(f"************** doing {i} **************")
-        
-        [A,B,C,D,E,F] = [i,i,i,i,i,i]
-        size = np.log2(math.prod([A,A,B,C,D]) + math.prod([A,D,E,E,F]))
-        flops = np.log10(math.prod([A,B,C,D,E,F])*2)
-        times = [flops, size]
-        
-        tensor_1 = np.random.rand(A, A, B, C, D)
-        tensor_2 = np.random.rand(A, D, E, E, F)
-        format_string = "aabcd,adeef->dcf"
-
-
-        times = do_contraction(format_string, tensor_1, tensor_2, times)    
-        append_results_to_csv(str(num_threads)+"data_flops.csv",[times])
-
-def exp_float32(num_threads):
-    initialize_writing(str(num_threads)+"data_flops32.csv")
-    for i in range(50,54,1):
-        print(f"************** doing {i} **************")
-        
-        [A,B,C,D,E,F] = [i,i,i,i,i,i]
-        size = np.log2(math.prod([A,A,B,C,D]) + math.prod([A,D,E,E,F]))
-        flops = np.log10(math.prod([A,B,C,D,E,F])*2)
-        times = [flops, size]
-        
-        tensor_1 = np.random.rand(A, A, B, C, D).astype(np.float32)
-        tensor_2 = np.random.rand(A, D, E, E, F).astype(np.float32)
-        format_string = "aabcd,adeef->dcf"
-
-
-        times = do_contraction(format_string, tensor_1, tensor_2, times)    
-        append_results_to_csv(str(num_threads)+"data_flops32.csv",[times])
+    except:
+        print(backend +" was killed.")
+        save_dictionary(file_name, data)
 
 
 
-# Standard Python entry point
+
 if __name__ == "__main__":
-    # Check if enough arguments are provided
-    if len(sys.argv) < 2:
-        print("Usage: python script.py <num1> <num2>")
-        sys.exit(1)  # Exit with an error code
-
-    # Convert arguments to float
-    num1 = int(sys.argv[1])
-    exp_float(num1)
-    exp_float32(num1)
-    exp_float_unopt(num1)
+    main()

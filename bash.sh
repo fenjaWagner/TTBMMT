@@ -1,4 +1,10 @@
-OMP_NUM_THREADS=1 python3 experiments_threads_cp.py 1
-OMP_NUM_THREADS=2 python3 experiments_threads_cp.py 2
-OMP_NUM_THREADS=3 python3 experiments_threads_cp.py 3
-OMP_NUM_THREADS=4 python3 experiments_threads_cp.py 4
+
+for k in $(seq 1 4); do
+    echo "$k threads"
+    for i in $(seq 0 1); do
+        for j in $(seq 0 2); do
+            echo "Running program with $i and $j"
+            OMP_NUM_THREADS=$k python3 experiments_threads.py "$i" "$j" "$k"
+        done
+    done
+done
