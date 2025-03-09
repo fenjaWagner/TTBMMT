@@ -25,11 +25,13 @@ def main():
     
     instance_index = int(sys.argv[1])
     backend_index = int(sys.argv[2])
-    file_name = "dictionary.txt"
+    file_name = "insteresting_einsum_dictionary.txt"
 
     # Load existing dictionary
     data = load_dictionary(file_name)
-    instance_list =  ["mc_2022_167", "mc_2022_079", "wmc_2021_130", "wmc_2023_035", "str_matrix_chain_multiplication_1000", "str_mps_varying_inner_product_2000", "wmc_2023_152", "str_mps_varying_inner_product_200", "mc_2023_002", "str_matrix_chain_multiplication_100", "lm_batch_likelihood_sentence_4_4d", "lm_batch_likelihood_brackets_4_4d", "mc_2023_188", "lm_batch_likelihood_sentence_3_12d", "mc_2020_017", "lm_batch_likelihood_sentence_4_8d", "mc_2023_arjun_117", "mc_2021_027",  "mc_rw_blasted_case1_b14_even3", "str_nw_peps_closed_333", "wmc_2023_141", "mc_2020_arjun_046", "mc_2020_arjun_057", "mc_2021_arjun_171", "str_nw_mera_closed_120", "lm_batch_likelihood_sentence_4_12d", "str_nw_mera_open_26", "rnd_mixed_08"]
+    
+    #instance_list =  ["mc_2022_167", "mc_2022_079", "wmc_2021_130", "wmc_2023_035", "str_matrix_chain_multiplication_1000", "str_mps_varying_inner_product_2000", "wmc_2023_152", "str_mps_varying_inner_product_200", "mc_2023_002", "str_matrix_chain_multiplication_100", "lm_batch_likelihood_sentence_4_4d", "lm_batch_likelihood_brackets_4_4d", "mc_2023_188", "lm_batch_likelihood_sentence_3_12d", "mc_2020_017", "lm_batch_likelihood_sentence_4_8d", "mc_2023_arjun_117", "mc_2021_027",  "mc_rw_blasted_case1_b14_even3", "str_nw_peps_closed_333", "wmc_2023_141", "mc_2020_arjun_046", "mc_2020_arjun_057", "mc_2021_arjun_171", "str_nw_mera_closed_120", "lm_batch_likelihood_sentence_4_12d", "str_nw_mera_open_26", "rnd_mixed_08"]
+    instance_list = ["mc_2020_017", "wmc_2023_141", "lm_batch_likelihood_sentence_4_12d", "md_mixed_08", "mc_2022_167", "wmc_2023_152", "mc_2023_002", "mc_2020_arjun_046", "lm_batch_likelihood_sentence_4_12d", "mc_2020_arjun_057"]
     backend_list = ["custom" , "numpy", "np_mm", "torch"]
 
     instance_name = instance_list[instance_index]
