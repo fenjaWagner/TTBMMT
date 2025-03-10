@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+from pprint import pprint
 
 # Sample dictionary with multiple instances
 def load_dictionary(filename):
@@ -13,7 +14,7 @@ def load_dictionary(filename):
         return {}  # Return an empty dictionary if file doesn't exist
 
 def normal_plot():
-    data = load_dictionary("dictionary.txt")
+    data = load_dictionary("interesting_einsum_dictionary.txt")
     # Extract instance names and timing methods
     instance_names = list(data.keys())
     timing_methods = ["custom", "numpy", "np_mm", "torch"]
@@ -61,7 +62,7 @@ def normal_plot():
 
 
 def numpy_numbers_plot():
-    data = load_dictionary("dictionary.txt")
+    data = load_dictionary("interesting_einsum_dictionary.txt")
     
     # Extract instance names and timing methods
     instance_names = list(data.keys())
@@ -91,7 +92,6 @@ def numpy_numbers_plot():
 
     # Create the plot with a larger figure size
     plt.figure(figsize=(14, 6))
-
     # Plot bars for non-numpy methods
     for i, (method, hatch) in enumerate(zip(timing_methods, hatch_patterns)):
         plt.bar(
@@ -100,7 +100,9 @@ def numpy_numbers_plot():
         )
 
     # Set a **fixed height** for NumPy labels above the tallest bar
-    fixed_offset = 0.02 * max(times.flatten())  
+    fixed_offset = 0.02 * max(times.flatten()) 
+    y_max = max(times.flatten()) 
+    plt.ylim(0, y_max * 1.15)  
 
     # Add NumPy results as text above the bars
     for i in range(len(instance_names)):
@@ -119,7 +121,7 @@ def numpy_numbers_plot():
     plt.ylabel("Time (seconds)")
     plt.title("Execution Times for Different Instances (NumPy as Text)")
 
-    # ✅ Fix x-axis labels to prevent overlap
+    # Fix x-axis labels to prevent overlap
     plt.xticks(x + bar_width * (len(timing_methods) / 2), instance_names, rotation=90, ha="right")
 
     plt.legend()
@@ -131,4 +133,35 @@ def numpy_numbers_plot():
     # Show the plot
     plt.show()
 
-numpy_numbers_plot()
+
+def threads_plot():
+    data = load_dictionary("threads.txt")
+    
+    # Extract thread counts and execution times
+    threads = [entry["threads"] for entry in data.values()]
+    custom_times = [entry["custom"] for entry in data.values()]
+    np_mm_times = [entry["np_mm"] for entry in data.values()]
+    torch_times = [entry["torch"] for entry in data.values()]
+
+    # Plotting
+    
+    plt.figure(figsize=(8, 5))
+    plt.plot(threads, custom_times, marker="o", linestyle="-", color="blue", label="Custom")
+    plt.plot(threads, np_mm_times, marker="s", linestyle="--", color="green", label="np_mm")
+    plt.plot(threads, torch_times, marker="^", linestyle="-.", color="red", label="Torch")
+
+    # Labels and title
+    plt.xlabel("Number of Threads")
+    plt.ylabel("Execution Time (seconds)")
+    plt.title("Execution Time vs Threads")
+    max_value = max(max(custom_times), max(np_mm_times), max(torch_times)) + 0.5
+    plt.ylim(0, max_value)  # Set y-axis to start at 0
+    plt.legend()
+    plt.xticks(threads) 
+    plt.grid(True)
+
+    # Show plot
+    plt.show()
+
+
+threads_plot()
