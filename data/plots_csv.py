@@ -7,7 +7,7 @@ csv_file = "data_flops.csv"  # Replace with your actual file name
 df = pd.read_csv(csv_file)
 
 # Extract relevant data
-x_labels = df["flops_log10"].astype(str)  # FLOPs on x-axis
+x_labels = df["flops_log10"].astype(float).round(decimals=3).astype(str)  # Rounded FLOPs on x-axis
 timing_methods = ["custom", "np_mm", "torch"]  # Bars only for these
 numpy_times = df["numpy"].values  # Numpy values for text labels
 times = df[timing_methods].values  # Extract only bar values
@@ -46,9 +46,12 @@ plt.scatter([], [], color="red", label="numpy (text)")
 plt.xlabel("flops_log10")
 plt.ylabel("Time (seconds)")
 plt.title("Execution Times for Different FLOPs (NumPy as Text)")
-plt.xticks(x + bar_width, x_labels, rotation=45)
+plt.xticks(x + bar_width, x_labels, rotation=90)  # Rotate x-ticks to ensure readability
 plt.legend()
 plt.grid(axis="y", linestyle="--", alpha=0.7)
+
+# Adjust layout to prevent overlap and ensure readability
+plt.tight_layout()
 
 # Show the plot
 plt.show()
