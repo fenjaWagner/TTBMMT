@@ -28,19 +28,22 @@ def save_dictionary(filename, data):
 
 def exp():
     #i_list = ["lm_batch_likelihood_sentence_4_8d", "lm_batch_likelihood_sentence_3_12d", "wmc_2023_035", "mc_2021_027", "mc_2022_079"]
-    i_list = ["mc_2022_167"]
+    i_list = ["mc_2020_arjun_046"]
     for stri in i_list:
         print(f"*************************************** {stri} *******************************")
 
         instance = einsum_benchmark.instances[stri]
         s_opt_size = instance.paths.opt_size
         dict = {}
-        for backend in ["np_mm", "custom"]:#, "custom", "numpy", "np_mm"]:
-            C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+        for backend in ["np_mm"]:#, "custom", "numpy", "np_mm"]:
+            C, time, time_fragment , sizes= fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
             
             print(f"backend {backend} + time {time} + fragment_time {time_fragment} + difference {time-time_fragment}, sum {C.sum()}, instance_s {instance.result_sum}")
-            dict[backend] = {"time": time,
-                             "fragment_time": time_fragment}
+            #print(sizes)
+            size_prod = [max(sizes[i][0], sizes[i][1]) for i in range(0, len(sizes))]
+            print(max(size_prod))
+            max_flops = [m*m for m in size_prod]
+            print(max(max_flops))
         #save_dictionary("dict_mc_2022_167.txt")
 
 
