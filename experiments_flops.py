@@ -33,8 +33,8 @@ def do_contraction(format_string, tensor_1, tensor_2, times):
     return times
 
 def exp_float_unopt():
-    #initialize_writing("data_flops_unopt.csv")
-    for i in range(53,55,1):
+    initialize_writing("data_flops_unopt.csv")
+    for i in range(14,54,5):
         print(f"************** doing {i} **************")
         
         [A,B,C,D,E,F] = [i,i,i,i,i,i]
@@ -44,7 +44,7 @@ def exp_float_unopt():
          
         tensor_1 = np.random.rand(A, B, C, D)
         tensor_2 = np.random.rand(A, D, E, F)
-        format_string = "abcd,adef->dcbef"
+        format_string = "abcd,adef->cbef"
 
         times = do_contraction(format_string, tensor_1, tensor_2, times)
  
