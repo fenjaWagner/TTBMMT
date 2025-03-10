@@ -1,0 +1,57 @@
+numpy sehr lahm: mc_2020_017, wmc_2023_141, lm_batch_likelihood_sentence_4_12d, rnd_mixed_08
+
+custom sehr langsam: mc_2022_167
+
+torch langsamer als np_mm: wmc_2023_152, mc_2023_002, mc_2020_arjun_046, lm_batch_likelihood_sentence_4_12d
+
+custom schneller als torch und np_mm: mc_2020_arjun_046, mc_2020_arjun_057
+
+torch fail: mc_2022_167, mc_2020_017 (why? run again!) -> shorts
+
+
+*************************************** mc_2022_167 *******************************
+backend np_mm + time 8.69844675064087 + fragment_time 1.2670063972473145 + difference 7.431440353393555, sum 15000, instance_s 15000
+backend custom + time 33.00047779083252 + fragment_time 22.039801597595215 + difference 10.960676193237305, sum 15000, instance_s 15000
+numpy: ~ 2.5 s
+
+mc_2020_017, wmc_2023_141, lm_batch_likelihood_sentence_4_12d, md_mixed_08, mc_2022_167, wmc_2023_152, mc_2023_002, mc_2020_arjun_046, lm_batch_likelihood_sentence_4_12d, mc_2020_arjun_046, mc_2020_arjun_057
+
+maximale mögliche flops in mc_2022_167: 64*64 (sehr klein).
+
+lm_batch_likelihood_sentence_4_12d: 39398400, 1552233922560000
+mc_2020_arjun_046: 8388608, 70368744177664 hadamard products: 174, hyperedges: 169, keine traces
+
+warum bestimmte dinge schneller als torch und andere nicht?
+
+
+Writing: 
+
+*********************** Background **********************************
+---------------- MATHS------------------
+What are tensors, basically higher dimensional matrices, contraction basically higher dimensional matrix matrix multiplication. -> Explain contractions.
+
+ 
+Einsum Summation, how does it work? 
+	- original one, format string, (source??)
+	- special cases: traces, disappearing indices, hadamard products
+
+---- Ways to calculate a TC-----
+Three Approaches: 
+1) (Vectorized) Nested Loops
+-> Looping over the indices, improved with loop transformations (s.a loop-reordering or -fusions), often poor memory access.
+
+2) Transpose-Transpose-GEMM-Transpose
+first transposes and flattens the tensors so that they can be interpreted as a matrix, then multiplicates it (and transposes the result if necessary. transposing (and therefore extra storing) result in an overhead.
+-> if the transposing takes most of the runtime, bandwithbound, therefore not good. 
+-> performs well in the compute-bound regime 
+
+3) Loops-over-GEMMs
+slice the tensor into 2D-subtensors. Works well, if the slices are large. Does not work always (depends on the tensor layout)
+
+-> numpy: nested loops (?)
+torch, custom, np_bmm: TT-BMM-T
+
+
+********************** the algorithm **************************
+1. find free indices in a and b and contracted ones
+2. transpose the tensors (a = [batch, free, contracted], b= [batch, contracted, free])
