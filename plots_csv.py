@@ -55,5 +55,5 @@ def plot(csv_file):
     plt.savefig(f"{base_filename}.png", format="png")
 
 
-for filename in ["data_traces.csv", "data_unopt.csv", "data_batch.csv"]:
+for filename in ["data_traces.csv", "data_unopt.csv", "data_batch.csv", "data_opt.csv"]:
     plot(filename)

@@ -162,5 +162,6 @@ def exp_sparse():
         append_results_to_csv("data_sparse.csv", [times])
 
 exp_float_unopt()
+exp_float()
 exp_float_traces()
 exp_float_batch()
