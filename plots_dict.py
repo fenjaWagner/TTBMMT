@@ -15,11 +15,11 @@ def load_dictionary(filename):
 import matplotlib.pyplot as plt
 import numpy as np
 
-def normal_plot():
-    data = load_dictionary("interesting_einsum_dictionary.txt")
+def normal_plot(filename):
+    data = load_dictionary(filename)
     # Extract instance names and timing methods
     instance_names = list(data.keys())
-    timing_methods = ["custom", "numpy", "np_mm", "torch"]
+    timing_methods = ["custom", "np_mm", "torch", "numpy"]
 
     # Convert data into a 2D list (rows = instances, columns = methods)
     times = [
@@ -68,10 +68,14 @@ def normal_plot():
     plt.tight_layout()
     plt.legend()
     plt.grid(axis="y", linestyle="--", alpha=0.7)
-    plt.savefig(f"benchmark.png", format="png")
+    base_filename = filename.split('.')[0]
+
+    # Save the plot as a PNG file with the same name as the CSV file
+    plt.savefig(f"{base_filename}.png", format="png")
+    #plt.savefig(f"benchmark.png", format="png")
 
     # Show the plot
-    plt.show()
+   # plt.show()
 
 
 
@@ -179,5 +183,5 @@ def threads_plot():
     # Show plot
     plt.show()
 
-
-normal_plot()
+for filename in ["e_b.txt", "e_b_double.txt"]:
+    normal_plot(filename)
