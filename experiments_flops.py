@@ -161,4 +161,6 @@ def exp_sparse():
         times = do_contraction(format_string, tensor_1, tensor_2, times)
         append_results_to_csv("data_sparse.csv", [times])
 
-exp_float()
+exp_float_unopt()
+exp_float_traces()
+exp_float_batch()
