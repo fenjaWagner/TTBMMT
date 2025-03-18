@@ -8,3 +8,7 @@ for i in $(seq 0 9); do
         python3 e_b.py "$i" "$j"
     done
 done
+
+python3 plots_dict.py
+python3 experiments_flops.py
+python3 plots_csv.py
