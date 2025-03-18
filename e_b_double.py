@@ -1,5 +1,6 @@
 import json
 import sys
+import numpy as np
 import einsum_benchmark
 import f_path_operation_copy as fo
 
@@ -25,7 +26,7 @@ def main():
     
     instance_index = int(sys.argv[1])
     backend_index = int(sys.argv[2])
-    file_name = "e_b.txt"
+    file_name = "e_b_double.txt"
 
     # Load existing dictionary
     data = load_dictionary(file_name)
@@ -48,16 +49,14 @@ def main():
                                "flops": flops,
                                "size": size}
     save_dictionary(file_name, data)
-    
-    print(backend)
-    print(instance_name)
+    tensors = instance.tensors
     try: 
         total_time = 0
         max_time = 15
         num_iterations = 0
         while total_time < max_time:
             print("start")
-            C, runtime, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+            C, runtime, time_fragment = fo.work_path(s_opt_size.path, [tensor.astype(np.float32) for tensor in tensors], instance.format_string, backend)
             print(num_iterations)
             iteration_time = time_fragment if backend == "torch" else runtime
             total_time += iteration_time
