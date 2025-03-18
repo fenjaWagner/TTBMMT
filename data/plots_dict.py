@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import json
-from pprint import pprint
 
 # Sample dictionary with multiple instances
 def load_dictionary(filename):
@@ -12,6 +11,9 @@ def load_dictionary(filename):
     except FileNotFoundError:
         print(f"Warning: {filename} not found. Creating a new dictionary.")
         return {}  # Return an empty dictionary if file doesn't exist
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 def normal_plot():
     data = load_dictionary("interesting_einsum_dictionary.txt")
@@ -34,8 +36,12 @@ def normal_plot():
     bar_width = 0.2  # Adjust for spacing
 
     # Colors and hatch patterns for each method
-    colors = ["blue", "green", "red", "purple"]
-    hatch_patterns = ["//", "xx", "--", ".."]  # Different hatch patterns
+    colors = ["#6C8B3C", "#A3BFD9", "#D1A14D", "#9C3D3D"] 
+    hatch_patterns = ["//", "xx", "..", "||"] 
+
+    # Function to split instance names for better readability
+    def split_instance_name(name):
+        return '_\n'.join(name.split('_'))
 
     # Create the plot
     plt.figure(figsize=(10, 5))
@@ -47,16 +53,26 @@ def normal_plot():
             label=method, color=colors[i], hatch=hatch, edgecolor="black"
         )
 
+    # Split the instance names for readability
+    split_names = [split_instance_name(name) for name in instance_names]
+
     # Labels and title
     plt.xlabel("Instance Name")
-    plt.ylabel("Time (seconds)")
-    plt.title("Execution Times for Different Instances (Accessible)")
-    plt.xticks(x + bar_width * (len(timing_methods) / 2), instance_names, rotation=45)
+    plt.ylabel("Iterations per Second")
+    plt.title("Iterations per Second for Different Instances")
+    
+    # Fix x-axis labels to prevent overlap by rotating and splitting them
+    plt.xticks(x + bar_width * (len(timing_methods) / 2), split_names, rotation=0, ha="center")
+
+    # Adjust layout to prevent overlap and ensure readability
+    plt.tight_layout()
     plt.legend()
     plt.grid(axis="y", linestyle="--", alpha=0.7)
+    plt.savefig(f"benchmark.png", format="png")
 
     # Show the plot
     plt.show()
+
 
 
 
@@ -164,4 +180,4 @@ def threads_plot():
     plt.show()
 
 
-threads_plot()
+normal_plot()
