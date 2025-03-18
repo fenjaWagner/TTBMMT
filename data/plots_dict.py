@@ -15,8 +15,8 @@ def load_dictionary(filename):
 import matplotlib.pyplot as plt
 import numpy as np
 
-def normal_plot():
-    data = load_dictionary("interesting_einsum_dictionary.txt")
+def normal_plot(filename):
+    data = load_dictionary(filename)
     # Extract instance names and timing methods
     instance_names = list(data.keys())
     timing_methods = ["custom", "numpy", "np_mm", "torch"]
@@ -179,5 +179,5 @@ def threads_plot():
     # Show plot
     plt.show()
 
-
-normal_plot()
+for filename in ["e_b.txt", "e_b_double.txt"]:
+    normal_plot(filename)
