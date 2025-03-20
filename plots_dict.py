@@ -120,123 +120,49 @@ def normal_plot(filename):
 
 
 
-
-
-def numpy_numbers_plot():
-    data = load_dictionary("interesting_einsum_dictionary.txt")
+def plot_threads():
+    problem_name = "mc_2020_arjun_046"
+    data = load_dictionary("threads.txt")
+    thread_numbers = [int(thread) for thread in data.keys()]
+    backends = list(next(iter(data["1"].values())).keys())  # Extract backend names
     
-    # Extract instance names and timing methods
-    instance_names = list(data.keys())
-    timing_methods = ["custom", "np_mm", "torch"]  # Bars only for these
-    
-    # Convert data into a 2D list (rows = instances, columns = methods)
-    times = np.array([
-        [data[instance].get(method, 0) for method in timing_methods]
-        for instance in instance_names
-    ], dtype=np.float32)
+    colors = ["#D84B8A", "#7BB9FF", "#FF9F00"] # Custom colors for different backends
+    hatch_patterns = ["//", "xx", ".."]  # Patterns for accessibility
+    bar_width = 0.2  # Width of each bar
 
-    # Replace NaNs (if any) with 0
-    times[np.isnan(times)] = 0  
+    # Create the plot
+    plt.figure(figsize=(10, 6))
 
-    # Extract NumPy times separately
-    numpy_times = np.array([
-        data[instance].get("numpy", 0) for instance in instance_names
-    ])
-
-    # Define bar width and positions
-    x = np.arange(len(instance_names))  # X locations for instances
-    bar_width = 0.2  # Adjust for spacing
-
-    # Define colors and hatch patterns for accessibility
-    colors = ["blue", "green", "purple"]
-    hatch_patterns = ["//", "xx", ".."]  
-
-    # Create the plot with a larger figure size
-    plt.figure(figsize=(14, 6))
-    # Plot bars for non-numpy methods
-    for i, (method, hatch) in enumerate(zip(timing_methods, hatch_patterns)):
+    for backend_idx, backend in enumerate(backends):
+        backend_values = [data[str(thread_number)].get(problem_name, {}).get(backend, 0) for thread_number in thread_numbers]
+        
+        # Plotting the bars
         plt.bar(
-            x + i * bar_width, times[:, i], width=bar_width,
-            label=method, color=colors[i], hatch=hatch, edgecolor="black"
+            np.array(thread_numbers) + backend_idx * bar_width - 0.25, backend_values, width=bar_width,
+            label=f"{backend}", color=colors[backend_idx], hatch=hatch_patterns[backend_idx], edgecolor="black"
         )
 
-    # Set a **fixed height** for NumPy labels above the tallest bar
-    fixed_offset = 0.02 * max(times.flatten()) 
-    y_max = max(times.flatten()) 
-    plt.ylim(0, y_max * 1.15)  
-
-    # Add NumPy results as text above the bars
-    for i in range(len(instance_names)):
-        plt.text(
-            x[i] + bar_width * 1,  # Center above bar groups
-            max(times[i]) + fixed_offset,  # Fixed height offset
-            f"{numpy_times[i]:.2f}s",  
-            color="red", fontsize=9, ha="center", fontweight="bold"
-        )
-
-    # Add NumPy to the legend
-    plt.scatter([], [], color="red", label="numpy (text)")
-
-    # Labels and title
-    plt.xlabel("Instance Names")
-    plt.ylabel("Time (seconds)")
-    plt.title("Execution Times for Different Instances (NumPy as Text)")
-
-    # Fix x-axis labels to prevent overlap
-    plt.xticks(x + bar_width * (len(timing_methods) / 2), instance_names, rotation=90, ha="right")
-
+    # Set labels and title
+    plt.xlabel("Number of Threads")
+    plt.ylabel("Iterations per Second")
+    plt.title(f"Iterations per Second for {problem_name} Across Different Backends and Threads")
+    
+    # Set log scale for Y-axis
+    #plt.yscale('log')
+    
+    # Add a legend for the backends
     plt.legend()
+
+    # Gridlines
     plt.grid(axis="y", linestyle="--", alpha=0.7)
 
-    # Prevent labels from being cut off
-    plt.tight_layout()
+    # Set x-ticks to be thread numbers
+    plt.xticks(thread_numbers)
 
+    # Adjust layout for better visibility
+    plt.tight_layout()
     # Show the plot
-    plt.show()
-
-
-def threads_plot():
-    data = load_dictionary("1_threads.txt")
-    
-    # Prepare data for plotting
-    labels = []
-    threads = []
-    sizes = []
-    iterations_per_second = []  # Placeholder for iterations per second (using size/threads as a simple proxy)
-
-    for key, value in data.items():
-        labels.append(key)
-        threads.append(value["threads"])
-        sizes.append(value["size"])
-        iterations_per_second.append(value["size"] / value["threads"])  # Simple assumption: size divided by threads
-
-    # Plotting
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    # Group data by thread count (x-axis)
-    unique_threads = sorted(set(threads))
-    bar_width = 0.2
-    index = np.arange(len(unique_threads))
-
-    # Plot bars for each thread count
-    for i, thread_count in enumerate(unique_threads):
-        # Get the data for the current thread count
-        current_data = [iterations_per_second[j] for j in range(len(threads)) if threads[j] == thread_count]
-        current_labels = [labels[j] for j in range(len(threads)) if threads[j] == thread_count]
-        current_sizes = [sizes[j] for j in range(len(threads)) if threads[j] == thread_count]
-
-        ax.bar(index[i] + bar_width * np.arange(len(current_data)), current_data,
-            bar_width, label=f"Threads: {thread_count}", alpha=0.7)
-
-    # Adding labels, title, and legend
-    ax.set_xlabel("Thread Configurations")
-    ax.set_ylabel("Iterations per Second (Size/Threads)")
-    ax.set_title("Iterations per Second for Different Thread Configurations")
-    ax.set_xticks(index + bar_width * 1.5)
-    ax.set_xticklabels([f"Thread {t}" for t in unique_threads], rotation=45)
-    ax.legend(title="Thread Count")
-    plt.tight_layout()
-
     plt.savefig(f"threads.png", format="png")
 
-dynamic_normal_plot("e_b_double.txt")
+#dynamic_normal_plot("e_b_double.txt")
+plot_threads()
