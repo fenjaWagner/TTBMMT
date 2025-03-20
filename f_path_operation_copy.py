@@ -57,13 +57,19 @@ def invoke_contraction_custom( A, B,mini_f_string):
     return C, time_fragment
 
 
-def prepare_contraction(mini_f_string, A,B, backend = "custom"):
-    methods = {"custom": invoke_contraction_custom,
-               "torch": invoke_contraction_torch,
-               "numpy": invoke_contraction_numpy,
-               "np_mm": invoke_contraction_np_mm}
+def prepare_contraction(mini_f_string, A, B, backend="custom"):
+    methods = {
+        "custom": invoke_contraction_custom,
+        "torch": invoke_contraction_torch,
+        "numpy": invoke_contraction_numpy,
+        "np_mm": invoke_contraction_np_mm,
+    }
     method = methods[backend]
-    C, time_fragment = method(A, B,mini_f_string)
+    try:
+        C, time_fragment = method(A, B, mini_f_string)
+    except Exception as e:
+        print(f"Error in {backend}: {e}")
+        C, time_fragment = None, None
     return C, time_fragment
 
 
