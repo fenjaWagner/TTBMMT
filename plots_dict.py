@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+import re
 
 # Sample dictionary with multiple instances
 def load_dictionary(filename):
@@ -19,8 +20,8 @@ def dynamic_normal_plot(filename):
     instance_names = list(data.keys())
     timing_methods = ["custom", "np_mm", "torch", "numpy"]
 
-    colors = ["#6C8B3C", "#A3BFD9", "#D1A14D", "#9C3D3D"]
-    hatch_patterns = ["//", "xx", "..", "||"]
+    colors = ["#27AEEF", "#F9776C", "#666767", "#FEA301"]
+    hatch_patterns = ["", "xx", "--", "//"]
 
     def split_instance_name(name):
         return '_\n'.join(name.split('_'))
@@ -36,7 +37,7 @@ def dynamic_normal_plot(filename):
             plt.bar(
                 bar_x, val, width=0.18,
                 label=method if instance_idx == 0 else None,
-                color=colors[i], hatch=hatch_patterns[i], edgecolor="black"
+                color=colors[i], hatch=hatch_patterns[i], edgecolor="white"
             )
 
     split_names = [split_instance_name(name) for name in instance_names]
@@ -75,8 +76,8 @@ def normal_plot(filename):
     bar_width = 0.2  # Adjust for spacing
 
     # Colors and hatch patterns for each method
-    colors = ["#6C8B3C", "#A3BFD9", "#D1A14D", "#9C3D3D"] 
-    hatch_patterns = ["//", "xx", "..", "||"] 
+    colors = ["#27AEEF", "#F9776C", "#666767", "#FEA301"] 
+    hatch_patterns = ["", "xx", "--", "//"]
 
     # Function to split instance names for better readability
     def split_instance_name(name):
@@ -89,7 +90,7 @@ def normal_plot(filename):
     for i, (method, hatch) in enumerate(zip(timing_methods, hatch_patterns)):
         plt.bar(
             x + i * bar_width, times[:, i], width=bar_width,
-            label=method, color=colors[i], hatch=hatch, edgecolor="black"
+            label=method, color=colors[i], hatch=hatch, edgecolor="white"
         )
 
     # Split the instance names for readability
@@ -127,25 +128,29 @@ def plot_threads():
     backends = list(next(iter(data["1"].values())).keys())  # Extract backend names
     
     colors = ["#D84B8A", "#7BB9FF", "#FF9F00"] # Custom colors for different backends
-    hatch_patterns = ["//", "xx", ".."]  # Patterns for accessibility
+    hatch_patterns = ["", "xx", "--"]  # Patterns for accessibility
     bar_width = 0.2  # Width of each bar
 
     # Create the plot
-    plt.figure(figsize=(10, 6))
-
+    plt.figure(figsize=(8, 6))
+    offset = (bar_width * (len(backends) - 1)) / 2
+    
     for backend_idx, backend in enumerate(backends):
         backend_values = [data[str(thread_number)].get(problem_name, {}).get(backend, 0) for thread_number in thread_numbers]
         
         # Plotting the bars
+        x_positions = np.array(thread_numbers) - offset + backend_idx * bar_width
         plt.bar(
-            np.array(thread_numbers) + backend_idx * bar_width - 0.25, backend_values, width=bar_width,
-            label=f"{backend}", color=colors[backend_idx], hatch=hatch_patterns[backend_idx], edgecolor="black"
+
+            x_positions, backend_values, width=bar_width,
+            label=f"{backend}", color=colors[backend_idx], hatch=hatch_patterns[backend_idx], edgecolor="white"
         )
 
     # Set labels and title
     plt.xlabel("Number of Threads")
     plt.ylabel("Iterations per Second")
     plt.title(f"Iterations per Second for {problem_name} Across Different Backends and Threads")
+
     
     # Set log scale for Y-axis
     #plt.yscale('log')
@@ -164,5 +169,74 @@ def plot_threads():
     # Show the plot
     plt.savefig(f"threads.png", format="png")
 
+def plot_flops():
+
+    data = load_dictionary("flop_dict.txt")
+
+    colors = {
+    "custom": "#27AEEF",    # greenish
+    "np_mm": "#F9776C",     # blueish
+    "torch": "#666767",     # reddish
+    "numpy": "#FEA301"      # yellowish
+}
+
+    hatches = {
+        "custom": "",
+        "np_mm": "xx",
+        "torch": "--",
+        "numpy": "//"
+    }
+
+    for formatstring, flop_dict in data.items():
+        flops = []
+        backend_results = {
+            "custom": [],
+            "np_mm": [],
+            "torch": [],
+            "numpy": []
+        }
+
+        for flop, results in flop_dict.items():
+            values = [results[backend] for backend in backend_results]
+            if not all(v == 0 for v in values):
+                flops.append(float(flop))
+                for backend in backend_results:
+                    backend_results[backend].append(results[backend])
+
+        sorted_indices = np.argsort(flops)
+        flops_sorted = np.array(flops)[sorted_indices]
+        for backend in backend_results:
+            backend_results[backend] = np.array(backend_results[backend])[sorted_indices]
+
+        bar_width = 0.2
+        x = np.arange(len(flops_sorted))
+        plt.figure(figsize=(12, 6))
+
+        for i, backend in enumerate(backend_results):
+            bars = plt.bar(
+                x + i * bar_width,
+                backend_results[backend],
+                width=bar_width,
+                label=backend,
+                color=colors[backend],
+                hatch=hatches[backend],
+                edgecolor="white"
+            )
+
+        plt.yscale('log')
+        plt.xticks(x + 1.5 * bar_width, [f"{f:.2f}" for f in flops_sorted], rotation=45)
+        plt.xlabel("FLOPs")
+        plt.ylabel("Iterations per second (log scale)")
+        plt.title(f"Iterations per second for '{formatstring}'")
+        plt.legend()
+        plt.tight_layout()
+
+        # Create a safe filename
+        safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', formatstring)
+        plt.savefig(f"{safe_name}.png", dpi=300)
+
+
 #dynamic_normal_plot("e_b_double.txt")
 plot_threads()
+for file in ["e_b_double.txt", "e_b.txt"]:
+    dynamic_normal_plot(file)
