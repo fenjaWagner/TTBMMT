@@ -3,6 +3,7 @@ import sys
 import einsum_benchmark
 import f_path_operation_copy as fo
 
+
 def load_dictionary(filename):
     """Load a dictionary from a JSON file."""
     try:
@@ -25,8 +26,8 @@ def main():
     
     instance_index = int(sys.argv[1])
     backend_index = int(sys.argv[2])
-    thread_number = int(sys.argv[3])
-    file_name = f"{thread_number}_threads.txt"
+    thread_number = str(sys.argv[3])
+    file_name = "threads.txt"
 
     # Load existing dictionary
     data = load_dictionary(file_name)
@@ -41,33 +42,46 @@ def main():
     s_opt_size = instance.paths.opt_size
     flops = s_opt_size.flops
     size = s_opt_size.size
-    if instance_name in data.keys():
-        data[instance_name][backend] = None
-    else: 
-        data[instance_name] = {backend: None,
-                               "threads": thread_number,
-                               "size": size}
-    save_dictionary(file_name, data)
+    thread_number = str(thread_number)
+   
+    # Check if the thread_number exists in the dictionary
+    if thread_number not in data:
+        # If not, create the structure for this thread number
+        data[thread_number] = {}
+
+    # Check if the instance_name exists for this thread number
+    if instance_name not in data[thread_number]:
+        # If not, create the structure for this instance name under the thread number
+        data[thread_number][instance_name] = {}
+        save_dictionary(file_name, data)
     
     print(backend)
     print(instance_name)
-    try: 
-        C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
-        if backend == "torch":
-            data[instance_name][backend] = time_fragment
-            print(time_fragment)
-            
-        else:
-            data[instance_name][backend] = time
-            data[instance_name][backend+"_tf"] = time_fragment
-            print(time)
-        
-        save_dictionary(file_name, data)
 
+    print(f"Running {backend} with warmup...")
+    
+    # Warm-up iterations (not timed)
+    for _ in range(1):
+        C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+        
+    print(f"Warmup complete for {backend}. Starting timed runs...")
+    try: 
+        total_time = 0
+        num_iterations = 0
+        while total_time < 10:
+            C, run_time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+            iteration_time = time_fragment if backend == "torch" else run_time
+            total_time += iteration_time
+            num_iterations += 1
+
+        iterations_per_second = num_iterations / total_time
+        data[thread_number][instance_name][backend]= iterations_per_second
+        save_dictionary(file_name, data)
     except:
         print(backend +" was killed.")
         save_dictionary(file_name, data)
-
+    
+       
 
 
 
