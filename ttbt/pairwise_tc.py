@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import time
-import wrapper
+from ttbt import wrapper
 
 def prepare_indices(term_A, term_B,  mini_output):
     set_A = set(term_A)

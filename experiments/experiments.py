@@ -1,12 +1,11 @@
-#import opt_einsum as oe
 import einsum_benchmark
-#import f_path_operation as fop
-import multi_tc as fo
 import numpy as np
 import ascii
 import cgreedy
 import csv
 import json
+
+from ttbt import multi_tc
 
 def initialize_writing(backend):
     """Writes the given data to a CSV file."""
@@ -36,7 +35,7 @@ def exp():
         s_opt_size = instance.paths.opt_size
         dict = {}
         for backend in ["np_mm"]:#, "custom", "numpy", "np_mm"]:
-            C, time, time_fragment , sizes= fo.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
+            C, time, time_fragment , sizes= multi_tc.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
             
             print(f"backend {backend} + time {time} + fragment_time {time_fragment} + difference {time-time_fragment}, sum {C.sum()}, instance_s {instance.result_sum}")
             #print(sizes)
@@ -67,7 +66,7 @@ def blocks():
     s_opt_size = instance.paths.opt_size
     clock = 0
     for i in range(5):
-        C, time = fo.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, "custom")
+        C, time = multi_tc.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, "custom")
         print(time)
         clock += time
     print("time", clock/5)
@@ -95,7 +94,7 @@ def benchmark_experiments():
             for backend in ["custom" , "numpy", "np_mm", "torch"]:
                 print(backend)
                 try: 
-                    C, time, time_fragment = fo.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
+                    C, time, time_fragment = multi_tc.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
                     if backend == "torch":
                         times.append(time_fragment)
                         

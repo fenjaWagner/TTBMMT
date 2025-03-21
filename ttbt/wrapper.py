@@ -1,8 +1,10 @@
 import numpy as np
 import ctypes
+import os
 
-# Load the shared library
-libbmm = ctypes.CDLL('./b_t_libbmm.so')  
+current_dir = os.path.dirname(os.path.abspath(__file__))
+libbmm_path = os.path.join(current_dir, 'b_t_libbmm.so')
+libbmm = ctypes.CDLL(libbmm_path)
 
 # Define the TacoTensor structure
 class TacoTensor(ctypes.Structure):

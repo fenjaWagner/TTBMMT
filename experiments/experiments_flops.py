@@ -1,10 +1,10 @@
 import numpy as np
-import multi_tc as fo
 import time
 import math
 import csv
 import json
 import sys
+from ttbt import multi_tc
 
 def load_dictionary(filename):
     """Load a dictionary from a JSON file."""
@@ -49,7 +49,7 @@ def do_contraction(format_string, tensor_1, tensor_2, backend, max_time=4):
     num_iterations = 0
     while total_time < max_time:
         tic = time.time()
-        C, time_fragment = fo.prepare_contraction(format_string, tensor_1, tensor_2, backend)
+        C, time_fragment = multi_tc.prepare_contraction(format_string, tensor_1, tensor_2, backend)
         toc = time.time()
         iteration_time = time_fragment #if backend == "torch" else toc - tic
         total_time += iteration_time

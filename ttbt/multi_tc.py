@@ -1,10 +1,8 @@
 import numpy as np
 import torch
-import pairwise_tc
-import ascii
-from collections import Counter
 import time
 import einsum_benchmark
+from ttbt import pairwise_tc
 
 def build_sizes(term_A, term_B, shape_A, shape_B):
     sizes = {}
