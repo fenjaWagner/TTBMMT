@@ -22,7 +22,7 @@ def prepare_indices(term_A, term_B,  mini_output):
     
     return [''.join(set_l) for set_l in [batch, contract, keep_A, keep_B]]
 
-def map_to_bmm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
+def pairwise_tc_custom(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
     """Maps the contraction of two given tensors to the bmm.
 
     Args:
@@ -71,7 +71,7 @@ def map_to_bmm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
 
 
 
-def map_to_np_mm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
+def pairwise_tc_np_mm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
     """Maps the contraction of two given tensors to the bmm of numpy.
 
     Args:

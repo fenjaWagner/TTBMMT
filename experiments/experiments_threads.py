@@ -1,7 +1,7 @@
 import json
 import sys
 import einsum_benchmark
-import f_path_operation_copy as fo
+import multi_tc as fo
 
 
 def load_dictionary(filename):
@@ -62,14 +62,14 @@ def main():
     
     # Warm-up iterations (not timed)
     for _ in range(1):
-        C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+        C, time, time_fragment = fo.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
         
     print(f"Warmup complete for {backend}. Starting timed runs...")
     try: 
         total_time = 0
         num_iterations = 0
         while total_time < 10:
-            C, run_time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+            C, run_time, time_fragment = fo.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
             iteration_time = time_fragment #if backend == "torch" else run_time
             total_time += iteration_time
             num_iterations += 1

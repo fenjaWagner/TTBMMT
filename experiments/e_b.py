@@ -1,7 +1,7 @@
 import json
 import sys
 import einsum_benchmark
-import f_path_operation_copy as fo
+import multi_tc as fo
 
 def load_dictionary(filename):
     """Load a dictionary from a JSON file."""
@@ -57,7 +57,7 @@ def main():
         num_iterations = 0
         while total_time < max_time:
             print("start")
-            C, runtime, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
+            C, runtime, time_fragment = fo.multi_tc(s_opt_size.path, instance.tensors, instance.format_string, backend)
             print(num_iterations)
             iteration_time = time_fragment if backend == "torch" else runtime
             total_time += iteration_time

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-import f_map_to_bmm_copy
+import pairwise_tc
 import ascii
 from collections import Counter
 import time
@@ -36,7 +36,7 @@ def invoke_contraction_np_mm( A, B,mini_f_string):
     term_B = mini_inputs[1]
     sizes = build_sizes(term_A, term_B, A.shape, B.shape)
    
-    C= f_map_to_bmm_copy.map_to_np_mm(term_A, term_B, mini_output, A, B, sizes)
+    C= pairwise_tc.pairwise_tc_np_mm(term_A, term_B, mini_output, A, B, sizes)
     
     if type(C) != np.ndarray:
         C = np.array(C)
@@ -51,7 +51,7 @@ def invoke_contraction_custom( A, B,mini_f_string):
     term_B = mini_inputs[1]
     sizes = build_sizes(term_A, term_B, A.shape, B.shape)
    
-    C= f_map_to_bmm_copy.map_to_bmm(term_A, term_B, mini_output, A, B, sizes)
+    C= pairwise_tc.pairwise_tc_custom(term_A, term_B, mini_output, A, B, sizes)
     
     if type(C) != np.ndarray:
         C = np.array(C)
@@ -76,7 +76,7 @@ def prepare_contraction(mini_f_string, A, B, backend="custom"):
 
 
 
-def work_path(path, tensors, format_string, backend = "custom"):
+def multi_tc(path, tensors, format_string, backend = "custom"):
     ssa_path = einsum_benchmark.meta.runtime.to_ssa_path(path)
     format_string = format_string.replace(" ", "")
     annotated_path = einsum_benchmark.meta.runtime.to_annotated_ssa_path(format_string, ssa_path, True)
