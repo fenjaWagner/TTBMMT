@@ -126,8 +126,7 @@ def plot_threads():
     data = load_dictionary("threads.txt")
     thread_numbers = [int(thread) for thread in data.keys()]
     backends = list(next(iter(data["1"].values())).keys())  # Extract backend names
-    
-    colors = ["#D84B8A", "#7BB9FF", "#FF9F00"] # Custom colors for different backends
+    colors = ["#27AEEF", "#F9776C", "#666767"] # Custom colors for different backends
     hatch_patterns = ["", "xx", "--"]  # Patterns for accessibility
     bar_width = 0.2  # Width of each bar
 
