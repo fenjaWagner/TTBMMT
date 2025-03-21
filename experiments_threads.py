@@ -70,7 +70,7 @@ def main():
         num_iterations = 0
         while total_time < 10:
             C, run_time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
-            iteration_time = time_fragment if backend == "torch" else run_time
+            iteration_time = time_fragment #if backend == "torch" else run_time
             total_time += iteration_time
             num_iterations += 1
 

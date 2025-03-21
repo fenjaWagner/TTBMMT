@@ -55,9 +55,7 @@ def map_to_bmm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
     Tensor_1 = np.ascontiguousarray((Tensor_1).reshape((size_batch, size_rest_1, size_sum )))
     Tensor_2 = np.ascontiguousarray((Tensor_2).reshape((size_batch, size_sum, size_rest_2)))
 
-    tic = time.time()
     O_Tensor = wrapper.call_cpp_bmm(Tensor_1, Tensor_2)
-    toc = time.time()
 
     term_O_tmp = batch_idcs + keep_1_idcs + keep_2_idcs
     
@@ -68,7 +66,7 @@ def map_to_bmm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
     if term_O != term_O_tmp:
         O_Tensor = np.einsum(term_O_tmp+"->"+term_O, O_Tensor)
 
-    return O_Tensor, toc-tic
+    return O_Tensor
 
 
 
@@ -105,9 +103,7 @@ def map_to_np_mm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
     Tensor_1 = np.ascontiguousarray((Tensor_1).reshape((size_batch, size_rest_1, size_sum )))
     Tensor_2 = np.ascontiguousarray((Tensor_2).reshape((size_batch, size_sum, size_rest_2)))
      
-    tic = time.time()
     O_Tensor = Tensor_1 @ Tensor_2
-    toc = time.time()
 
     term_O_tmp = batch_idcs + keep_1_idcs + keep_2_idcs
 
@@ -117,4 +113,4 @@ def map_to_np_mm(term_1, term_2, term_O, Tensor_1, Tensor_2, sizes):
     if term_O != term_O_tmp:
         O_Tensor = np.einsum(term_O_tmp+"->"+term_O, O_Tensor)
 
-    return O_Tensor, toc-tic
+    return O_Tensor

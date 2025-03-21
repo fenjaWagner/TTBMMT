@@ -51,7 +51,7 @@ def do_contraction(format_string, tensor_1, tensor_2, backend, max_time=4):
         tic = time.time()
         C, time_fragment = fo.prepare_contraction(format_string, tensor_1, tensor_2, backend)
         toc = time.time()
-        iteration_time = time_fragment if backend == "torch" else toc - tic
+        iteration_time = time_fragment #if backend == "torch" else toc - tic
         total_time += iteration_time
         num_iterations +=1
     iterations_per_second = num_iterations / total_time

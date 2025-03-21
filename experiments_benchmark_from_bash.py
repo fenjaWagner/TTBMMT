@@ -53,13 +53,9 @@ def main():
     print(instance_name)
     try: 
         C, time, time_fragment = fo.work_path(s_opt_size.path, instance.tensors, instance.format_string, backend)
-        if backend == "torch":
-            data[instance_name][backend] = time_fragment
-            print(time_fragment)
-            
-        else:
-            data[instance_name][backend] = time
-            print(time)
+
+        data[instance_name][backend] = time_fragment
+        print(time_fragment)
         
         save_dictionary(file_name, data)
 

@@ -236,7 +236,7 @@ def plot_flops():
         plt.savefig(f"{safe_name}.png", dpi=300)
 
 
-#dynamic_normal_plot("e_b_double.txt")
 plot_threads()
+plot_flops()
 for file in ["e_b_double.txt", "e_b.txt"]:
     dynamic_normal_plot(file)
