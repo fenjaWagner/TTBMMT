@@ -243,8 +243,9 @@ def plot_flops():
 
         plt.yscale('log')
         plt.xticks(x + 1.5 * bar_width, [f"{f:.2f}" for f in flops_sorted], rotation=45)
-        plt.xlabel("FLOPs")
-        plt.ylabel("Iterations per second (log scale)")
+        plt.xlabel("FLOPs", fontsize = 12)
+        plt.tick_params(axis='both', labelsize=12) 
+        plt.ylabel("Iterations per second (log scale)", fontsize = 12)
         plt.title(f"Iterations per second for '{formatstring}'")
         plt.legend()
         plt.tight_layout()
@@ -255,6 +256,6 @@ def plot_flops():
 
 
 #plot_threads()
-#plot_flops()
-for file in ["Original_Datatypes.txt"]:
-    dynamic_normal_plot(file)
+plot_flops()
+#for file in ["Original_Datatypes.txt"]:
+#    dynamic_normal_plot(file)
