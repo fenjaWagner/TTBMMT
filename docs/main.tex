@@ -1,0 +1,160 @@
+\documentclass[12pt]{scrbook}
+\usepackage[utf8]{inputenc}
+\usepackage{algorithm}
+\setlength{\textfloatsep}{10pt} % Reduces space after the pseudocode
+\usepackage{algorithmic}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[backend=biber,style=numeric,]{biblatex}
+\usepackage{bookmark}
+\usepackage{booktabs}
+\usepackage{calc}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage[top=3.0cm, bottom=3.0cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{pgfplots}
+\usepackage{pdfpages}
+\usepackage{scrhack}
+\usepackage[automark,ilines]{scrlayer-scrpage}
+\usepackage{setspace}
+\usepackage{soul}
+\usepackage{tabularx}
+\usepackage{tikz}
+
+\usepackage{etoolbox}
+% decrease the space between headlines and text
+\makeatletter
+\renewcommand{\chapterheadstartvskip}{\vspace{0pt}}
+\renewcommand{\chapterheadendvskip}{\vspace{\baselineskip}}
+% \patchcmd{<cmd>}{<search>}{<replace>}{<success>}{<failure>}
+\patchcmd{\section}{-3.5ex \@plus -1ex \@minus -.2ex}{-\z@}{}{}
+\patchcmd{\section}{2.3ex \@plus .2ex}{-
+1ex}{}{}
+\patchcmd{\subsection}{-3.25ex\@plus -1ex \@minus -.2ex}{-\z@}{}{}
+\patchcmd{\subsection}{1.5ex \@plus .2ex}{-1ex}{}{}
+\patchcmd{\@xsect}{\ignorespaces}{\vspace*{0.1\baselineskip}\ignorespaces}{}{}
+\makeatother
+
+\usetikzlibrary{positioning, quotes, calc, patterns}
+\pgfplotsset{compat=newest}
+
+% Set the page style and center the page number
+\pagestyle{scrplain}
+\cfoot[\pagemark]{\pagemark} % Center the page number in the footer
+\ofoot[]{} % Clear the default outer footer
+\ifoot[]{} % Clear the default inner footer
+
+\graphicspath{ {images/} }
+\addbibresource{literature.bib}
+
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{darkgreen}{rgb}{0.055, 0.549, 0.153}
+\definecolor{midgreen}{rgb}{0, 0.549, 0.082}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{blind-purple}{rgb}{0.863, 0.149, 0.498}
+\definecolor{blind-blue}{rgb}{0.118, 0.067, 0.773}
+\definecolor{blind-orange}{rgb}{0.996, 0.38, 0}
+\definecolor{blind-turquoise}{rgb}{0, 0.584, 0.62}
+%
+\lstset{frame=tb,
+    language=SQL,
+    aboveskip=3mm,
+    belowskip=3mm,
+    showstringspaces=false,
+    columns=flexible,
+    basicstyle={\small\ttfamily},
+    numbers=none,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{darkgreen},
+    stringstyle=\color{mauve},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=3 
+}
+%\raggedbottom
+\renewcommand{\arraystretch}{1.3}  % Increase row height for better readability
+
+\begin{document}
+
+\newgeometry{top=3.0cm, bottom=3.0cm, left=4cm, right=2cm}
+\begin{titlepage}
+    \begin{center}
+
+        \begin{spacing}{1.5}
+            \includegraphics[scale=0.25]{images/Bildmarke_blue_8cm.jpg}
+            \vspace*{\fill}
+        \end{spacing}
+        \begin{spacing}{2.5}
+            \textbf{\huge Überschrift}\\[0.5cm]
+            \vspace*{\fill}
+            \begin{spacing}{1.5}
+                \textbf{PROJEKTARBEIT\\}
+                Wintersemester 2024/2025
+            \end{spacing}
+        \end{spacing}
+
+        \vspace*{\fill}
+
+        \begin{spacing}{1.15}
+            \textbf{FRIEDRICH-SCHILLER-UNIVERSITY JENA\\}
+            Fakultät für Mathematik und Informatik
+
+            \vspace*{\fill}
+
+            \textit{Eingereicht von Fenja Wagner}\\
+            Matrikelnummer 177944\\
+            Dozent: Mark Blacher\\
+            Jena, \today
+
+        \end{spacing}
+    \end{center}
+\end{titlepage}
+
+%\chapter*{Abstract}
+%\input{chapters/abstract.tex}
+%
+%\chapter*{Zusammenfassung}
+%\input{chapters/zusammenfassung.tex}
+%
+%\tableofcontents
+%
+\newgeometry{top=3.0cm, bottom=3.0cm, left=4cm, right=2cm}
+%
+\chapter{Introduction}
+\label{introduction}
+\input{chapters/introduction.tex}
+%
+\chapter{Background}
+\label{background}
+\input{chapters/background.tex}
+
+\chapter{Related Work}
+\label{related}
+\input{chapters/related_work.tex}
+%
+\chapter{The Algorithm}
+\label{algorithm}
+\input{chapters/algorithms.tex}
+%
+\chapter{Experiments}
+\label{experiments}
+\input{chapters/experiments.tex}
+%
+\chapter{Discussion}
+\label{discussion}
+\input{chapters/discussion.tex}
+%
+\chapter{Conclusion}
+\input{chapters/conclusion.tex}
+%
+\printbibliography
+%
+%\includepdf[pages=-]{chapters/Eigenständigkeitserklärung.pdf}
+
+\end{document}
