@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 import json
 import re
@@ -17,7 +18,8 @@ def load_dictionary(filename):
 
 def dynamic_normal_plot(filename):
     data = load_dictionary(filename)
-    instance_names = list(data.keys())
+    instance_names = [i[0] for i in sorted(data.items(), key=lambda x: x[1]['flops'])]
+    print(instance_names)
     timing_methods = ["custom", "np_mm", "torch", "numpy"]
 
     colors = ["#27AEEF", "#F9776C", "#666767", "#FEA301"]
@@ -25,6 +27,7 @@ def dynamic_normal_plot(filename):
 
     def split_instance_name(name):
         return '_\n'.join(name.split('_'))
+    bar_width = 0.18  # Adjust for spacing
 
     plt.figure(figsize=(12, 6))
 
@@ -35,7 +38,7 @@ def dynamic_normal_plot(filename):
             val = data[instance].get(method) or 0
             bar_x = instance_idx - (num_active - 1) * 0.5 * 0.18 + bar_idx * 0.18
             plt.bar(
-                bar_x, val, width=0.18,
+                bar_x, val, width=bar_width,
                 label=method if instance_idx == 0 else None,
                 color=colors[i], hatch=hatch_patterns[i], edgecolor="white"
             )
@@ -43,15 +46,26 @@ def dynamic_normal_plot(filename):
     split_names = [split_instance_name(name) for name in instance_names]
     plt.xlabel("Instance Name")
     plt.ylabel("Iterations per Second (log scale)")
-    plt.title("Iterations per Second for Different Instances and Methods")
+    base_filename = filename.split('.')[0]
+    display_name = re.sub(r'[_]', ' ', base_filename)
+    plt.title(f"Iterations per Second for Different Instances with {display_name} and Methods")
     plt.xticks(range(len(instance_names)), split_names, rotation=0, ha="center")
+    ymax = plt.ylim()[1]
+    for i,  instance in enumerate(instance_names):
+        flops = round(data[instance]['flops'], 3)
+        x_pos = i -0.1 #+ bar_width * (len(timing_methods)/ 2)
+        #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
+        plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=8, rotation=0)
     plt.yscale('log')
     plt.grid(axis="y", linestyle="--", alpha=0.7)
     plt.legend()
+    #flops_patch = mpatches.Patch(color='white', label='Flops (text)')
+    #plt.legend(handles=plt.gca().get_legend_handles_labels()[0] + ["(text) flops"])
     plt.tight_layout()
 
-    base_filename = filename.split('.')[0]
-    plt.savefig(f"{base_filename}_compact.png", format="png")
+    
+    safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', base_filename)
+    plt.savefig(f"{safe_name}.png", dpi=300)
 
 
 
@@ -235,7 +249,7 @@ def plot_flops():
         plt.savefig(f"{safe_name}.png", dpi=300)
 
 
-plot_threads()
-plot_flops()
-for file in ["e_b_double.txt", "e_b.txt"]:
+#plot_threads()
+#plot_flops()
+for file in ["datatype_double.txt", "original_datatypes.txt"]:
     dynamic_normal_plot(file)
