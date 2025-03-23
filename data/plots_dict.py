@@ -44,8 +44,9 @@ def dynamic_normal_plot(filename):
             )
 
     split_names = [split_instance_name(name) for name in instance_names]
-    plt.xlabel("Instance Name")
-    plt.ylabel("Iterations per Second (log scale)")
+    fontsize = 11
+    plt.xlabel("Instance Name", fontsize = fontsize)
+    plt.ylabel("Iterations per Second (log scale)", fontsize = fontsize)
     base_filename = filename.split('.')[0]
     display_name = re.sub(r'[_]', ' ', base_filename)
     plt.title(f"Iterations per Second for Different Instances with {display_name} and Methods")
@@ -53,14 +54,13 @@ def dynamic_normal_plot(filename):
     ymax = plt.ylim()[1]
     for i,  instance in enumerate(instance_names):
         flops = round(data[instance]['flops'], 3)
-        x_pos = i -0.1 #+ bar_width * (len(timing_methods)/ 2)
+        x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
         #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
-        plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=8, rotation=0)
+        plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=10, rotation=0)
     plt.yscale('log')
     plt.grid(axis="y", linestyle="--", alpha=0.7)
-    plt.legend()
-    #flops_patch = mpatches.Patch(color='white', label='Flops (text)')
-    #plt.legend(handles=plt.gca().get_legend_handles_labels()[0] + ["(text) flops"])
+    plt.tick_params(axis='both', labelsize=fontsize) 
+    plt.legend(loc='upper right', ncol=1)
     plt.tight_layout()
 
     
