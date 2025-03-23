@@ -57,10 +57,15 @@ def dynamic_normal_plot(filename):
         x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
         #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
         plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=10, rotation=0)
+    #for i,  instance in enumerate(instance_names):
+    #    dtypes = data[instance]['data_type']
+    #    x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
+    #    #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
+    #    plt.text(x_pos, ymax * 0.7, f" {dtypes}", ha='center', fontsize=10, rotation=0)
     plt.yscale('log')
     plt.grid(axis="y", linestyle="--", alpha=0.7)
     plt.tick_params(axis='both', labelsize=fontsize) 
-    plt.legend(loc='upper right', ncol=1)
+    plt.legend()
     plt.tight_layout()
 
     
@@ -251,5 +256,5 @@ def plot_flops():
 
 #plot_threads()
 #plot_flops()
-for file in ["datatype_double.txt", "original_datatypes.txt"]:
+for file in ["Original_Datatypes.txt"]:
     dynamic_normal_plot(file)
