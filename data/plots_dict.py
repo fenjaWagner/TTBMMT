@@ -49,7 +49,7 @@ def dynamic_normal_plot(filename):
     plt.ylabel("Iterations per Second (log scale)", fontsize = fontsize)
     base_filename = filename.split('.')[0]
     display_name = re.sub(r'[_]', ' ', base_filename)
-    plt.title(f"Iterations per Second for Different Instances with {display_name} and Methods")
+    plt.title(f"Iterations per Second for Different Instances with {display_name}")
     plt.xticks(range(len(instance_names)), split_names, rotation=0, ha="center")
     ymax = plt.ylim()[1]
     for i,  instance in enumerate(instance_names):
@@ -57,11 +57,11 @@ def dynamic_normal_plot(filename):
         x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
         #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
         plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=10, rotation=0)
-    #for i,  instance in enumerate(instance_names):
-    #    dtypes = data[instance]['data_type']
-    #    x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
-    #    #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
-    #    plt.text(x_pos, ymax * 0.7, f" {dtypes}", ha='center', fontsize=10, rotation=0)
+    for i,  instance in enumerate(instance_names):
+        dtypes = data[instance]['data_type']
+        x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
+        #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
+        plt.text(x_pos, ymax * 0.7, f" {dtypes}", ha='center', fontsize=10, rotation=0)
     plt.yscale('log')
     plt.grid(axis="y", linestyle="--", alpha=0.7)
     plt.tick_params(axis='both', labelsize=fontsize) 
