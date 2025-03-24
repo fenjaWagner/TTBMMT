@@ -44,6 +44,7 @@ def dynamic_normal_plot(filename):
             )
 
     split_names = [split_instance_name(name) for name in instance_names]
+    #split_names = ["wmc_2023_152", "mc_2023_002", "mc_2020_\narjun_057", "mc_2020_017", "lm_batch_\nlikelihood_sentence_\n4_12d"]
     fontsize = 11
     plt.xlabel("Instance Name", fontsize = fontsize)
     plt.ylabel("Iterations per Second (log scale)", fontsize = fontsize)
@@ -72,71 +73,6 @@ def dynamic_normal_plot(filename):
     safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', base_filename)
     plt.savefig(f"{safe_name}.png", dpi=300)
 
-
-
-def normal_plot(filename):
-    data = load_dictionary(filename)
-    # Extract instance names and timing methods
-    instance_names = list(data.keys())
-    timing_methods = ["custom", "np_mm", "numpy",  "torch"]
-
-    # Convert data into a 2D list (rows = instances, columns = methods)
-    times = [
-        [data[instance].get(method, 0) for method in timing_methods]
-        for instance in instance_names
-    ]
-
-    # Replace None values with NaN to avoid plotting errors
-    times = np.array(times, dtype=np.float32)
-    times[np.isnan(times)] = 0  # Optional: Set NaN values to 0
-
-    # Bar width and positions
-    x = np.arange(len(instance_names))  # X locations for instances
-    bar_width = 0.2  # Adjust for spacing
-
-    # Colors and hatch patterns for each method
-    colors = ["#27AEEF", "#F9776C", "#666767", "#FEA301"] 
-    hatch_patterns = ["", "xx", "--", "//"]
-
-    # Function to split instance names for better readability
-    def split_instance_name(name):
-        return '_\n'.join(name.split('_'))
-
-    # Create the plot
-    plt.figure(figsize=(10, 5))
-
-    # Plot each method as a separate bar group with unique colors and hatch patterns
-    for i, (method, hatch) in enumerate(zip(timing_methods, hatch_patterns)):
-        plt.bar(
-            x + i * bar_width, times[:, i], width=bar_width,
-            label=method, color=colors[i], hatch=hatch, edgecolor="white"
-        )
-
-    # Split the instance names for readability
-    split_names = [split_instance_name(name) for name in instance_names]
-
-    # Labels and title
-    plt.xlabel("Instance Name")
-    plt.ylabel("Iterations per Second")
-    plt.title("Iterations per Second for Different Instances")
-    
-    # Fix x-axis labels to prevent overlap by rotating and splitting them
-    plt.xticks(x + bar_width * (len(timing_methods) / 2), split_names, rotation=0, ha="center")
-    plt.yscale('log')
-    plt.ylabel("Iterations per Second (log scale)")
-
-    # Adjust layout to prevent overlap and ensure readability
-    plt.tight_layout()
-    plt.legend()
-    plt.grid(axis="y", linestyle="--", alpha=0.7)
-    base_filename = filename.split('.')[0]
-
-    # Save the plot as a PNG file with the same name as the CSV file
-    plt.savefig(f"{base_filename}.png", format="png")
-    #plt.savefig(f"benchmark.png", format="png")
-
-    # Show the plot
-   # plt.show()
 
 
 
@@ -243,7 +179,7 @@ def plot_flops():
 
         plt.yscale('log')
         plt.xticks(x + 1.5 * bar_width, [f"{f:.2f}" for f in flops_sorted], rotation=45)
-        plt.xlabel("FLOPs", fontsize = 12)
+        plt.xlabel("Floating Point Operations (Log10 Scale)", fontsize = 12)
         plt.tick_params(axis='both', labelsize=12) 
         plt.ylabel("Iterations per second (log scale)", fontsize = 12)
         plt.title(f"Iterations per second for '{formatstring}'")
@@ -257,5 +193,5 @@ def plot_flops():
 
 #plot_threads()
 plot_flops()
-#for file in ["Original_Datatypes.txt"]:
-#    dynamic_normal_plot(file)
+for file in ["Original_Datatypes.txt"]:
+    dynamic_normal_plot(file)
