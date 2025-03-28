@@ -20,6 +20,7 @@
 \usepackage{MnSymbol}
 \usepackage{pgfplots}
 \usepackage{pdfpages}
+\usepackage{rotating}
 \usepackage{scrhack}
 \usepackage[automark,ilines]{scrlayer-scrpage}
 \usepackage{setspace}
@@ -156,6 +157,14 @@
 %
 \printbibliography
 %
+% Change the numbering for Figures and Tables in the Appendix
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\renewcommand{\thefigure}{A.\arabic{figure}}
+\renewcommand{\thetable}{A.\arabic{table}}
+\chapter*{Appendix}  % No number for the chapter, use \chapter for numbering
+\input{chapters/appendix.tex}
+
 %\includepdf[pages=-]{chapters/Eigenständigkeitserklärung.pdf}
 
 \end{document}

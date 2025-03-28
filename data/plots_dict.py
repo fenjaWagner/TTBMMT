@@ -184,14 +184,14 @@ def plot_flops():
                 hatch=hatches[backend],
                 edgecolor="white"
             )
-
+        fontsize = 15
         plt.yscale('log')
         plt.xticks(x + 1.5 * bar_width, [f"{f:.2f}" for f in flops_sorted], rotation=45)
-        plt.xlabel("Floating Point Operations (Log10 Scale)", fontsize = 12)
-        plt.tick_params(axis='both', labelsize=12) 
-        plt.ylabel("Iterations per second (log scale)", fontsize = 12)
-        plt.title(f"Iterations per second for '{formatstring}'")
-        plt.legend()
+        plt.xlabel("Floating Point Operations (Log10 Scale)", fontsize = fontsize)
+        plt.tick_params(axis='both', labelsize=fontsize) 
+        plt.ylabel("Iterations per second (log scale)", fontsize = fontsize)
+        plt.title(f"Iterations per second for '{formatstring}'",fontsize = fontsize)
+        plt.legend(fontsize = fontsize)
         plt.tight_layout()
 
         # Create a safe filename
@@ -200,6 +200,6 @@ def plot_flops():
 
 
 #plot_threads()
-#plot_flops()
-for file in ["Datatype_Double.txt"]:
-    dynamic_normal_plot(file)
+plot_flops()
+#for file in ["Datatype_Double.txt"]:
+#    dynamic_normal_plot(file)

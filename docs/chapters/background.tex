@@ -61,7 +61,7 @@ For example, the expression
 $$A_{jki} B_{ilm} \rightarrow C_{klj}$$
 means contracting the tensors via the index $i$, taking the result and summing over the axis $m$ (since the index $m$ does not appear in the output tensor) and transposing the tensor to $ C_{klj}$. \\
 
-\noindent When using common Einstein summation APIs such as Numpy ~\cite{Numpy} or PyTorch ~\cite{PyTorch}, the equation is expressed by stating simply the input and output indices as a format string. The format string for our last example would be
+\noindent When using common Einstein summation APIs such as Numpy~\cite{Numpy} or PyTorch~\cite{PyTorch}, the equation is expressed by stating simply the input and output indices as a format string. The format string for our last example would be
 $$jki, ilm \rightarrow klj.$$
 
 \noindent In the following, we will refer to the Einstein summation convention as ``einsum'' and use the representation as a format string with the output tensor explicitly marked by an arrow.
