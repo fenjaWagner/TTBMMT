@@ -1,56 +1,72 @@
 \section{Pairwise Tensor Contraction}
+An arbitrarily complex multi-tensor contraction can be decomposed into pairwise tensor contractions, guided by a specified
+contraction path. In this section, we present our algorithm for performing a single pairwise tensor contraction using the TransposeTranspose-BMM-Transpose (TTBT) approach.\\
 
-\begin{algorithm}[H]
-\caption{\textsc{Custom Pairwise Tensor Contraction}}
-    \label{alg:pc}
-\begin{algorithmic}[1]
-    \REQUIRE $einsum\_string$, Tensors $A$, $B$
-        \ENSURE Tensor $C$
-        \STATE retreive $I_A , I_B , I_{batch} , I_{contract}$
-        \STATE store the sizes of the indices
-        \STATE Preprocess $A$: transposing, removing traces and summing over arbitrary axes
-        \STATE $A \leftarrow$\textsc{Flatten}($A$)
-        \STATE Preprocess $B$: transposing, removing traces and summing over arbitrary axes
-        \STATE $B \leftarrow$\textsc{Flatten}($B$) 
-        \STATE $C\leftarrow$\textsc{BMM}(A,B)
-        \STATE Postprocess $C$: reshape $C\leftarrow C_{i_{{batch}_1}...i_{{batch}_k} i_{{A}_1} ...i_{{A}_l} i_{B_1} ...i_{B_m}}$
-        \STATE transpose $C\leftarrow C_{outputIndices}$
-        \RETURN $C$
-\end{algorithmic}
-\end{algorithm}
-For our pairwise tensor contraction, we use the TTBT (Transpose Transpose BMM Transpose) approach.
- Given an einsum string $a_1...a_k,b_1...b_l\rightarrow c_1...c_r$ that contains the indices of the input tensors $A_{a_1...a_k},B_{b_1...b_l}$ and the indices of the output tensor $C_{c_1...c_r}$ in the right order, we divide the index sets of the two to-be-contracted tensors $A$ and $B$ and the output tensor $C$ into the four sets
+\noindent Given a format string $a_1...a_k,b_1...b_l\rightarrow c_1...c_r$ that contains the indices of the input tensors $A_{a_1...a_k},B_{b_1...b_l}$ and the indices of the output tensor $C_{c_1...c_r}$ in the right order, we divide the index sets of the two to-be-contracted tensors $A$ and $B$ and the output tensor $C$ into the four sets
 \begin{itemize}
-    \item $I_{batch}= \{i_{{batch}_1},...,i_{{batch}_k}\}$, the indices that appear in $A, \text{ }B$ and $C$,
+    \item $I_{bt}= \{i_{{batch}_1},...,i_{{batch}_k}\}$, the indices that appear in $A, \text{ }B$ and $C$,
     \item $I_A=\{i_{{A}_1}, ...,i_{{A}_l}\}$, the indices that appear in both $A$ and $C$ but not in $B$,
     \item $I_B= \{i_{B_1} ,...,i_{B_m}\}$, the indices that appear in both $B$ and $C$ but not in $A$,
-    \item $I_{contract} = \{ i_{{contract}_1}, ..., i_{{contract}_n}\}$, the contracted indices that appear in both $A$ and $B$ but not in $C$.
+    \item $I_{con} = \{ i_{{contract}_1}, ..., i_{{contract}_n}\}$, the contracted indices that appear in both $A$ and $B$ but not in $C$.
 \end{itemize}
 Consider that all indices appear at most once in the sets, and that indices which appear solely in $A$ or $B$ but not in $C$ are excluded from all four sets. We also store the range of each index in a dictionary.\\
-By then transposing $A$
-with $indices_A \rightarrow i_{{batch}_1}...i_{{batch}_k}i_{{A}_1} ...i_{{A}_l}i_{{contract}_1} ... i_{{contract}_n}$
-to $A'$ and $B$ with $indices_B \rightarrow i_{{batch}_1}...i_{{batch}_k}i_{{contract}_1} ... i_{{contract}_n}i_{{B}_1} ...i_{{B}_m}$ to $B'$. By using Numpy's einsum engine \cite{Numpy}, we not only reorder the indices of the tensors but also eliminate traces and sum over arbitrary axes. This procedure ensures that our implementation can handle all possible einsum expressions. In addition, removing traces and arbitrary indices before the contraction results in smaller tensors and therefore smaller intermediate tensors and a lower number of floating-point operations.\\
+By transposing $A$ to $A'$ using the format string  
+$$\text{indices}_A \rightarrow i_{\text{batch}_1} \dots i_{\text{batch}_k} i_{\text{A}_1} \dots i_{\text{A}_l} i_{\text{contract}_1} \dots i_{\text{contract}_n},$$
+and $B$ to $B'$ using  
+$$\text{indices}_B \rightarrow i_{\text{batch}_1} \dots i_{\text{batch}_k} i_{\text{contract}_1} \dots i_{\text{contract}_n} i_{\text{B}_1} \dots i_{\text{B}_m},$$
+\noindent we reorder the tensors so that batch and contracted dimensions align properly. Using NumPy’s einsum engine ~\cite{Numpy} to process the respective format strings, we can transpose, eliminate traces, and sum over arbitrary axes in a single step.  \\
+This procedure ensures that our implementation can handle all possible einsum expressions. In addition, removing traces and arbitrary indices before the contraction results in smaller tensors and therefore smaller intermediate tensors and a lower number of floating-point operations.\\
  We then calculate the shape of the combined batch dimensions, the combined contracted dimensions, and the combined kept dimensions for $A$ and $B$ by multiplying the ranges of the respective indices.\\
- The result $C'$ is calculated by a blocked and parallelized batched matrix multiplication algorithm that we generated using TACO \cite{kjolstad2017taco} and optimized by blocking to improve cache usage and avoid unnecessary data movement. It is parallelized for problems that exceed a certain size. This algorithm takes the flattened tensors $A$ and $B$ and returns  $C' = A' \times B' \in \mathbb{R}^{\text{size}(I_{batch}) \cdot \text{size}(I_A) \cdot \text{size}(I_B)}$. $C'$ is then reshaped and transposed so its indices and their order match the given output indices. For the pseudocode of our pairwise tensor contraction refer to Algorithm \ref{alg:pc}.  \\
-The mapping of the tensors $A$ and $B$ to batched matrices and the remapping of the output tensor $C'$ to the desired shape is processed in Python, while the batched matrix multiplication is written in C++. \\
+ The result $C'$ is calculated by a blocked and parallelized batched matrix multiplication algorithm that we generated using TACO ~\cite{kjolstad2017taco} and optimized by blocking to improve cache usage and avoid unnecessary data movement. It is parallelized for problems that exceed a certain size. This algorithm takes the flattened tensors $A$ and $B$ and returns  $C' = A' \times B' \in \mathbb{R}^{\text{size}(I_{bt}) \cdot \text{size}(I_A) \cdot \text{size}(I_B)}$. $C'$ is then reshaped and transposed so its indices and their order match the given output indices. For the pseudocode of our pairwise tensor contraction refer to Algorithm \ref{alg:pc}.  \\
+ \begin{algorithm}[H]
+    \caption{\textsc{Custom Pairwise Tensor Contraction}}
+        \label{alg:pc}
+    \begin{algorithmic}[1]
+        \REQUIRE format\_string, Tensors $A$, $B$
+            \ENSURE Tensor $C$
+            \STATE Retreive $I_A , I_B , I_{bt} , I_{con}$
+            \STATE Store the sizes of the indices
+            \STATE Preprocess $A$: transpose, remove traces and sum over arbitrary axes
+            \STATE Preprocess $B$: transpose, remove traces and sum over arbitrary axes
+            \STATE Calculate index set sizes: $s_A = \textstyle{\prod\limits_{i\in I_A} size(i)},$ 
+            \STATE $s_B = \textstyle{\prod\limits_{i\in I_B} size(i)},$ 
+            \STATE $s_{bt} = \textstyle{\prod\limits_{i\in I_{bt}} size(i)},$ 
+            \STATE $s_{con} = \textstyle{\prod\limits_{i\in I_{con}} size(i)}.$
+            \STATE Reshape $A \leftarrow A_{s_{bt} s_A s_{con}}$
+            \STATE Reshape $B \leftarrow B_{s_{bt} s_{con} s_B}$
+            \STATE $C\leftarrow$\textsc{BMM}(A,B)
+            \STATE Reshape $C\leftarrow C_{i_{{batch}_1}...i_{{batch}_k} i_{{A}_1} ...i_{{A}_l} i_{B_1} ...i_{B_m}}$
+            \STATE Transpose $C\leftarrow C_{outputIndices}$
+            \RETURN $C$
+    \end{algorithmic}
+\end{algorithm}
+    
+\noindent The mapping of the tensors $A$ and $B$ to batched matrices and the remapping of the output tensor $C'$ to the desired shape is processed in Python, while the batched matrix multiplication is written in C++. \\
 Our implementation can process int\_16, int\_32, int\_64, float\_32, and float\_64 as data types.
 
 
 \section{Multi-Tensor Contraction}
+Our multi-tensor contraction algorithm takes the format string for the tensor contraction, the list of the referring tensors, a contraction path, and a backend flag. Our algorithm for pairwise contractions can process format strings composed of UTF8 symbols. However, PyTorch ~\cite{PyTorch} and Numpy ~\cite{Numpy} can only handle alphabetic characters. 
+To allow for the comparison of our algorithm to these approaches, we use einsum\_benchmark ~\cite{blacher2024einsum} to generate an annotated contraction path. This annotated path contains a list of pairs of indices for the tensors in the tensor list that are to be contracted and the short format strings for these specific pariwise contractions. 
+This short format string consists only of alphabetic characters. We then perform the pairwise contraction with the backend indicated by the flag. 
+We implemented Numpy's and PyTorch's einsum engine and our pairwise contraction as possible backends. Our own implementation will be referred to as ``custom''. Since Numpy's highly optimized matrix multiplication engine (matmul) can also process batched matrices ~\cite{Numpy}, we added a fourth backend that consists of our pairwise contraction algorithm in combination with Numpy's matmul method instead of our BMM. We will call this backend ``np\_mm'' to distinguish it from our custom implementation. \\
+The result of the pairwise tensor contraction is then appended to the tensor list. If the tensors $A$ or $B$ were not in the original tensor list, they are set to None to avoid unnecessary intermediate of data.\\
+For the pseudocode of the multi-tensor contraction refer to Algorithm \ref{alg:mtc}.
+
 \begin{algorithm}[H]
     \caption{\textsc{Multi-Tensor Contraction}}
     \label{alg:mtc}
     \begin{algorithmic}[1]
-        \REQUIRE  contraction\_path,  tensor\_list, einsum\_string, backend\_flag 
+        \REQUIRE  contraction\_path,  tensor\_list, format\_string, backend\_flag 
         \ENSURE Tensor $C$
         \STATE Store the length of tensor\_list in   $t\_l$.
         \STATE Calculate the ssa path from the contraction\_path.
-        \STATE Calculate the annotated\_ssa\_path from the ssa path and the einsum\_string. 
+        \STATE Calculate the annotated\_ssa\_path from the ssa path and the format\_string. 
         \FOR{every path\_tuple in  annotated\_ssa\_path }
         \STATE Retrieve tensors $A$ and $B$ from tensor\_list with indices from the path\_tuple.
-        \STATE  Retrieve the mini\_einsum\_string from the path\_tuple.
+        \STATE  Retrieve the short\_format\_string from the path\_tuple.
         \STATE Set $pc\_method$ depending on the backend\_flag 
-        \STATE  $C =$ $pc\_method$($A$, $B$, mini\_einsum\_string, backend\_flag) 
+        \STATE  $C =$ $pc\_method$($A$, $B$, short\_format\_string, backend\_flag) 
         \IF{index for tensor $A$ $\geq$ $t\_l$ }
         \STATE Delete $ A$ 
         \ENDIF
@@ -62,11 +78,3 @@ Our implementation can process int\_16, int\_32, int\_64, float\_32, and float\_
         \RETURN  $C$ 
     \end{algorithmic}
 \end{algorithm}
-Our multi-tensor contraction algorithm takes the einsum string, the list of the referring tensors, a contraction path, and a backend flag. Our algorithm for pairwise contractions can process einsum strings composed of UTF8 symbols. However, PyTorch \cite{PyTorch} and Numpy \cite{Numpy} can only handle alphabetic characters. 
-To be able to compare our algorithm to these approaches, we use einsum\_benchmark \cite{blacher2024einsum} to generate an annotated contraction path that contains a list of pairs of indices for the tensors in the tensor list that are to be contracted and the short einsum string for that specific contraction. 
-This short einsum string consists only of alphabetic characters. We then perform the pairwise contraction with the backend indicated by the flag. 
-We implemented Numpy's and PyTorch's einsum engine and our pairwise contraction as possible backends. Our own implementation will be referred to as ``custom''. Since Numpy's highly optimized matrix multiplication engine can also process batched matrices \cite{Numpy}, we added a fourth backend that consists of our pairwise contraction algorithm in combination with Numpy's matrix multiplication instead of our BMM. We will call this backend ``np\_mm'' to distinguish it from our custom implementation. \\
-The result of the pairwise tensor contraction is then appended to the tensor list. If the tensors $A$ or $B$ were not in the original tensor list, they are replaced with a scalar to avoid unnecessary storing of data.\\
-For the pseudocode of the multi-tensor contraction refer to Algorithm \ref{alg:mtc}.
-
-

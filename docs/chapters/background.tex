@@ -11,7 +11,7 @@ $$
 C_{ij} = \sum_{k} A_{ik} B_{kj}
 $$
 
-\noindent Extending this idea, let $T\in \mathbb{R}^{i_1\times ... \times i_p\times k_1 \times ... \times k_r}$ and $S\in \mathbb{R}^{k_1 \times ... \times k_r\times j_1 \times ... \times j_q}$. Then:
+\noindent For higher order tensors, the idea can be extended as follows: Let $T\in \mathbb{R}^{i_1\times ... \times i_p\times k_1 \times ... \times k_r}$ and $S\in \mathbb{R}^{k_1 \times ... \times k_r\times j_1 \times ... \times j_q}$. Then,
 
 $$
 C_{i_1, \dots, i_p, j_1, \dots, j_q} = \sum_{k_1, \dots, k_r} T_{i_1, \dots, i_p, k_1, \dots, k_r} S_{k_1, \dots, k_r, j_1, \dots, j_q}
@@ -26,7 +26,6 @@ A tensor network represents a complex tensor expression as a graph. Each tensor 
 \begin{center}
 \begin{tikzpicture}
     % Nodes (Tensors)
-    \node[circle, draw, minimum size=1cm] (T) at (-3, 0) {$T$};
     \node[circle, draw, minimum size=1cm] (A) at (1, 0) {$A$};
     \node[circle, draw, minimum size=1cm] (B) at (3, 0) {$B$};
 
@@ -34,9 +33,6 @@ A tensor network represents a complex tensor expression as a graph. Each tensor 
     \draw[-] (A) -- (B) node[midway, below] {$i$};
 
     % External Legs (Free indices)
-    \draw[-] (T) -- (-4, 0) node[left] {$p$};
-    \draw[-] (T) -- (-3, 1) node[yshift=7pt] {$q$};
-    \draw[-] (T) -- (-2, 0) node[right] {$r$};
     \draw[-] (A) -- (0, 1) node[left] {$j$};
     \draw[-] (A) -- (0, -1) node[left] {$k$};
     \draw[-] (B) -- (4, 1) node[right] {$l$};
@@ -47,22 +43,25 @@ A tensor network represents a complex tensor expression as a graph. Each tensor 
 \end{center}
 \end{figure}
 
-\noindent In Figure \ref{fig:tensor_network} one can see a tensor network that represents the tensor contraction 
+\noindent In Figure \ref{fig:tensor_network} one can see a tensor network representing the tensor contraction 
 $$
 C_{jklm} = \sum_{i} A_{jki} B_{ilm}.
 $$
 
 \section{Einstein Summation}
-The modern Einstein summation convention is a notation used in tensor calculus that simplifies mathematical expressions. The convention consists of eliminating the need to explicitly write summation signs by implicitly summing over all indices that are repeated in the input term or that do not appear in the output term.\\
+The modern Einstein summation convention is a notation used in tensor calculus that simplifies mathematical expressions. The original convention consists of eliminating the need to explicitly write summation signs by implicitly contracting all indices that are repeated in the input term. \\
 In the example above, the tensor contraction would be represented as
-$$C_{jklm} = A_{jki} B_{ilm} \text{ or }A_{jki} B_{ilm} \rightarrow C_{jklm},$$
-\noindent where the index $i$ is summed over because it appears twice in the right-hand term.\\
-By stating explicitly the indices and their order in the output tensor, we can also write tensor operations as transpositions, dot products, traces, and outer products in this concise manner. \\
+$$C_{jklm} = A_{jki} B_{ilm} ,$$
+\noindent where the index $i$ is summed over because it appears in the index sets of both $A$ and $B$.\\
+This idea is extended in the modern Einstein summation convention by contracting all indices that do not appear in the output term. In modern Einstein summation, our example can be written as
+$$A_{jki} B_{ilm} \rightarrow C_{jklm}.$$
+
+This extension leads to an even more powerful formalism. By stating explicitly the indices and their order in the output tensor, we can also express other tensor operations as transpositions, dot products, traces, and outer products in this concise manner.
 For example, the expression
 $$A_{jki} B_{ilm} \rightarrow C_{klj}$$
 means contracting the tensors via the index $i$, taking the result and summing over the axis $m$ (since the index $m$ does not appear in the output tensor) and transposing the tensor to $ C_{klj}$. \\
 
-\noindent When using common Einstein summation APIs such as Numpy \cite{Numpy} or PyTorch \cite{PyTorch}, the equation is expressed by stating simply the input and output indices. Our last example can be written as 
+\noindent When using common Einstein summation APIs such as Numpy ~\cite{Numpy} or PyTorch ~\cite{PyTorch}, the equation is expressed by stating simply the input and output indices as a format string. The format string for our last example would be
 $$jki, ilm \rightarrow klj.$$
 
-\noindent In the following, we will refer to the Einstein summation convention as ``einsum'' and use the last representation. 
+\noindent In the following, we will refer to the Einstein summation convention as ``einsum'' and use the representation as a format string with the output tensor explicitly marked by an arrow.

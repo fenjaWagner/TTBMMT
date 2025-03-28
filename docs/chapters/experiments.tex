@@ -6,14 +6,6 @@ Each core has a base frequency of 2.5 GHz and a max boost frequency of 3.1 GHz. 
 Python 3.12.8.
 
 \section{Experiments on Pairwise Tensor Contractions}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\textwidth]{images/aabcd_adeef__dcf.png}  % Include your image
-    \caption{Performance Comparison for a problem with batch dimensions, traces and arbitrary indices.}
-    \label{flops}
-\end{figure}
-\noindent We designed four small pairwise tensor contractions with or without batch dimensions, traces and arbitrary indices in different combinations as can be seen in Table \ref{tab:instance:data}. While the performance of all implementations decreases with a growing number of floating-point operations, the rate of this degration varies. Numpy performes better than all the other backends for low counts of floating-point operations in all four contractions. However, its performance declines fastly with increasing number of floating-point operations. For larger problems, our algorithm with the np\_mm backend emerged as the most efficient method across all cases. As can be seen in Figure \ref{flops}, our custom implementation outperformed PyTorch and Numpy for problems that contained batch dimensions, traces and arbitrary indices. A detailed performance ranking can be found in Table \ref{tab:instance:data}.
-
 \begin{table}[H]
     \caption{Performance ranking for compute-intensive problems for different pairwise tensor contractions.}
     \label{tab:instance:data}
@@ -39,6 +31,15 @@ Python 3.12.8.
     \end{tabularx}
     }
 \end{table}
+\noindent We designed four small pairwise tensor contractions with or without batch dimensions, traces and arbitrary indices in different combinations as can be seen in Table \ref{tab:instance:data}. \\
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{images/aabcd_adeef__dcf.png}  % Include your image
+    \caption{Performance Comparison for a problem with batch dimensions, traces and arbitrary indices. The x-axis depicts the number of floating point operations corresponding to an increased problem size.}
+    \label{flops}
+\end{figure}
+
+\noindent By increasing the dimension size of the tensors, we increased the number of floating-point operations necessary for the computation of the problem. We then compared the four different engines based on this number of operations. While the performance of all implementations decreases with a growing number of floating-point operations, the rate of this degration varies. Numpy performes better than all the other backends for low counts of floating-point operations in all four contractions. However, its performance declines fastly with increasing number of floating-point operations. For larger problems, our algorithm with the np\_mm backend emerged as the most efficient method across all cases. As can be seen in Figure \ref{flops}, our custom implementation outperformed PyTorch and Numpy for problems that contained batch dimensions, traces and arbitrary indices. A detailed performance ranking can be found in Table \ref{tab:instance:data}.
 
 
 \section{Einsum Benchmark} 
@@ -70,6 +71,7 @@ We ran the 28 problems from the einsum\_benchmark dataset \cite{blacher2024einsu
     \end{tabularx}
     }
 \end{table}
+\sloppy
 \noindent As shown in Figure \ref{e_b}, Numpy performs best for problems with small intermediate tensor sizes. Our custom algorithm is more efficient for problems involving the int data type, while PyTorch outperforms both our algorithm and the custom np\_mm BMM for problems with the double data type.\\
 Casting the instances data type from int\_32 to float\_64, we found that the performance of our custom algorithm remained unchanged, while PyTorch and np\_mm saw significant improvements, outperforming our algorithm. Here, the np\_mm implementation performed better than PyTorch on the instance lm\_batch\_likelihood\_sentence\_4\_12d.
 
