@@ -18,7 +18,8 @@ def load_dictionary(filename):
 
 def dynamic_normal_plot(filename):
     data = load_dictionary(filename)
-    instance_names = [i[0] for i in sorted(data.items(), key=lambda x: x[1]['flops'])]
+    #instance_names = [i[0] for i in sorted(data.items(), key=lambda x: x[1]['flops'])]
+    instance_names=["wmc_2023_152", "mc_2023_002", "mc_2020_arjun_057", "mc_2020_017", "lm_batch_likelihood_sentence_4_12d"]
     print(instance_names)
     timing_methods = ["custom", "np_mm", "torch", "numpy"]
 
@@ -44,31 +45,38 @@ def dynamic_normal_plot(filename):
             )
 
     split_names = [split_instance_name(name) for name in instance_names]
-    #split_names = ["wmc_2023_152", "mc_2023_002", "mc_2020_\narjun_057", "mc_2020_017", "lm_batch_\nlikelihood_sentence_\n4_12d"]
+    split_names = ["wmc_2023_152", "mc_2023_002", "mc_2020_\narjun_057", "mc_2020_017", "lm_batch_\nlikelihood_sentence_\n4_12d"]
     fontsize = 11
     plt.xlabel("Instance Name", fontsize = fontsize)
     plt.ylabel("Iterations per Second (log scale)", fontsize = fontsize)
     base_filename = filename.split('.')[0]
     display_name = re.sub(r'[_]', ' ', base_filename)
+    #plt.title(f"Iterations per Second for Different Instances")
     plt.title(f"Iterations per Second for Different Instances with {display_name}")
     plt.xticks(range(len(instance_names)), split_names, rotation=0, ha="center")
-    ymax = plt.ylim()[1]
-    for i,  instance in enumerate(instance_names):
-        flops = round(data[instance]['flops'], 3)
-        x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
-        #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
-        plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=10, rotation=0)
-    for i,  instance in enumerate(instance_names):
-        dtypes = data[instance]['data_type']
-        x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
-        #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
-        plt.text(x_pos, ymax * 0.7, f" {dtypes}", ha='center', fontsize=10, rotation=0)
+    
+    #ymax = plt.ylim()[1]
+
+
+    #plot flops
+    #for i,  instance in enumerate(instance_names):
+    #    flops = round(data[instance]['flops'], 3)
+    #    x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
+    #    #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
+    #    plt.text(x_pos, ymax * 0.98, f"flops: {flops}", ha='center', fontsize=10, rotation=0)
+
+    # plot data types
+    #for i,  instance in enumerate(instance_names):
+    #    dtypes = data[instance]['data_type']
+    #    x_pos = i -0.15 #+ bar_width * (len(timing_methods)/ 2)
+    #    #y_pos = max([data[instance].get(m, 0) or 0 for m in timing_methods])  # get highest bar height
+    #    plt.text(x_pos, ymax * 0.7, f" {dtypes}", ha='center', fontsize=10, rotation=0)
     plt.yscale('log')
     plt.grid(axis="y", linestyle="--", alpha=0.7)
     plt.tick_params(axis='both', labelsize=fontsize) 
     plt.legend()
     plt.tight_layout()
-
+    
     
     safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', base_filename)
     plt.savefig(f"{safe_name}.png", dpi=300)
@@ -192,6 +200,6 @@ def plot_flops():
 
 
 #plot_threads()
-plot_flops()
-for file in ["Original_Datatypes.txt"]:
+#plot_flops()
+for file in ["Datatype_Double.txt"]:
     dynamic_normal_plot(file)
