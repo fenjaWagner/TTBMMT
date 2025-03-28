@@ -174,9 +174,9 @@ def multi_tc(path, tensors, format_string, backend="custom"):
         
         # Delete used tensors if they are not in the original tensor list
         if first >= length:
-            A = np.empty((1,), dtype=np.float32) 
+            A = None #np.empty((1,), dtype=np.float32) 
         if second >= length:
-            B = np.empty((1,), dtype=np.float32) 
+            B = None #np.empty((1,), dtype=np.float32) 
         
         time_fragment += time_fragment_tmp  # Add the time for this fragment
         tensors.append(C)  # Append the result to the tensors list
