@@ -8,6 +8,8 @@
 # VSCode
 *.json
 
+*.pyc
+
 # Latex
 #*.png
 *.out
