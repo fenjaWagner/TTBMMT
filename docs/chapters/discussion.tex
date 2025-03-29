@@ -1,15 +1,12 @@
-In this chapter we seek explain the results of the experiments and discuss possible improvements to enhance our implementations efficiency.\\
+In this chapter we seek to explain the results of the experiments and discuss possible improvements to enhance he efficiency of our implementation.\\
 
-\section{Result Explanation}
-As described by \textcite{springer}, one of the TTBT-approaches drawbacks is the overhead induced by transposing and reshaping the tensors during pre- and post-processing. This overhead comes in costly, if the calculation is bandwith-bound which is the case for tensor contractions with relatively small tensors. This is reflected in our experiments as Numpy always outperforms Pytorch and our own implementations when the intermediate tensor size is small.\\
-However, with a rising number of floating-point operations Numpy's efficiency decreases rapidely while the other implementations performance remains more stable. 
-This is due to the increasing size and complexity of the tensors - while Numpy's looping approach results in poor memory access patterns, the TTBT approach used by Pytorch and our implementations ensures a more optimal cache usage.\\
+\section{Unterstanding the Results}
+As described by \textcite{springer}, one of the TTBT-approaches drawbacks is the overhead induced by transposing and reshaping the tensors during pre- and post-processing. This overhead comes in costly, if the calculation is bandwith-bound, which is the case for tensor contractions with relatively small tensors. This is reflected in our experiments as Numpy always outperforms Pytorch, np\_mm and our own implementation when the intermediate tensor size is small.\\
+However, with a rising number of floating-point operations Numpy's efficiency decreases rapidely, while the performance of the other implementations remains more stable. 
+This is due to the increasing size and complexity of the tensors - while Numpy's looping approach results in poor memory access patterns, the TTBT approach used by Pytorch and our implementation ensures a more efficient cache usage.\\
 
 \noindent Naturally, our algorithm with our custom BMM implementation is less efficient than the np\_mm version and Pytorch's engine in most cases. Even though our BMM is pararellized and blocked, it is unlikely to compete with the highly optimized linear algebra libraries that the others use for their matrix multiplications. However, our implementation performed better for some problems with data type int. A possible reason is that these libraries are optimized for floating-point arithmetics, whereas operations on integer types are handled by more generic, less-optimized code paths.\\
 
-\section{Improvements}
+\section{Possible Improvements}
 Our implementation uses Numpy's einsum engine to remove traces and arbitrary indices. If the tensors are complex this can lead again to suboptimal memory access patterns. This could be avoided with a more cache oriented implementation of this operation.\\
 Furthermore, we could improve our BMM by dynamically adjusting the block sizes based on the data type and cache size, and by enabling better vectorization through analyzing the data layout carefully and refactoring loop structures.
-
-\section{Interesting stuff}
-Should I add something about comparing our approach in combination with cgreedy and with the different backends to opt\_einsum? Or should I do that as an experiment and add it? 

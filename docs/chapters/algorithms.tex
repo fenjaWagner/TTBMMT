@@ -1,6 +1,6 @@
 \section{Pairwise Tensor Contraction}
 An arbitrarily complex multi-tensor contraction can be decomposed into pairwise tensor contractions, guided by a specified
-contraction path. In this section, we present our algorithm for performing a single pairwise tensor contraction using the TransposeTranspose-BMM-Transpose (TTBT) approach.\\
+contraction path. In this section, we present our algorithm for performing a single pairwise tensor contraction using the Transpose-Transpose-BMM-Transpose (TTBT) approach.\\
 
 \noindent Given a format string $a_1...a_k,b_1...b_l\rightarrow c_1...c_r$ that contains the indices of the input tensors $A_{a_1...a_k},B_{b_1...b_l}$ and the indices of the output tensor $C_{c_1...c_r}$ in the right order, we divide the index sets of the two to-be-contracted tensors $A$ and $B$ and the output tensor $C$ into the four sets
 \begin{itemize}
@@ -9,12 +9,12 @@ contraction path. In this section, we present our algorithm for performing a sin
     \item $I_B= \{i_{B_1} ,...,i_{B_m}\}$, the indices that appear in both $B$ and $C$ but not in $A$,
     \item $I_{con} = \{ i_{{contract}_1}, ..., i_{{contract}_n}\}$, the contracted indices that appear in both $A$ and $B$ but not in $C$.
 \end{itemize}
-Consider that all indices appear at most once in the sets, and that indices which appear solely in $A$ or $B$ but not in $C$ are excluded from all four sets. We also store the range of each index in a dictionary.\\
+Consider that all indices appear at most once in the sets, and that indices which appear solely in $A$ or $B$ but not in $C$ are excluded from all four sets. Because we will need the ranges of the indices in the post-processing, we store the range of each index in a dictionary.\\
 By transposing $A$ to $A'$ using the format string  
 $$\text{indices}_A \rightarrow i_{\text{batch}_1} \dots i_{\text{batch}_k} i_{\text{A}_1} \dots i_{\text{A}_l} i_{\text{contract}_1} \dots i_{\text{contract}_n},$$
 and $B$ to $B'$ using  
 $$\text{indices}_B \rightarrow i_{\text{batch}_1} \dots i_{\text{batch}_k} i_{\text{contract}_1} \dots i_{\text{contract}_n} i_{\text{B}_1} \dots i_{\text{B}_m},$$
-\noindent we reorder the tensors so that batch and contracted dimensions align properly. Using NumPy’s einsum engine~\cite{Numpy} to process the respective format strings, we can transpose, eliminate traces, and sum over arbitrary axes in a single step.  \\
+\noindent we reorder the tensors so that batch and contracted dimensions align properly. Using Numpy’s einsum engine~\cite{Numpy} to process the respective format strings, we can transpose, eliminate traces, and sum over arbitrary axes in a single step.  \\
 This procedure ensures that our implementation can handle all possible einsum expressions. In addition, removing traces and arbitrary indices before the contraction results in smaller tensors and therefore smaller intermediate tensors and a lower number of floating-point operations.\\
  We then calculate the shape of the combined batch dimensions, the combined contracted dimensions, and the combined kept dimensions for $A$ and $B$ by multiplying the ranges of the respective indices.\\
  The result $C'$ is calculated by a blocked and parallelized batched matrix multiplication algorithm that we generated using TACO~\cite{kjolstad2017taco} and optimized by blocking to improve cache usage and avoid unnecessary data movement. It is parallelized for problems that exceed a certain size. This algorithm takes the flattened tensors $A$ and $B$ and returns  $C' = A' \times B' \in \mathbb{R}^{\text{size}(I_{bt}) \cdot \text{size}(I_A) \cdot \text{size}(I_B)}$. $C'$ is then reshaped and transposed so its indices and their order match the given output indices. For the pseudocode of our pairwise tensor contraction refer to Algorithm \ref{alg:pc}.  \\
@@ -28,10 +28,10 @@ This procedure ensures that our implementation can handle all possible einsum ex
             \STATE Store the sizes of the indices
             \STATE Preprocess $A$: transpose, remove traces and sum over arbitrary axes
             \STATE Preprocess $B$: transpose, remove traces and sum over arbitrary axes
-            \STATE Calculate index set sizes: $s_A = \textstyle{\prod\limits_{i\in I_A} size(i)},$ 
-            \STATE $s_B = \textstyle{\prod\limits_{i\in I_B} size(i)},$ 
-            \STATE $s_{bt} = \textstyle{\prod\limits_{i\in I_{bt}} size(i)},$ 
-            \STATE $s_{con} = \textstyle{\prod\limits_{i\in I_{con}} size(i)}.$
+            \STATE Calculate index set sizes: $s_A = \textstyle{\prod\limits_{i\in I_A} range(i)},$ 
+            \STATE $s_B = \textstyle{\prod\limits_{i\in I_B} range(i)},$ 
+            \STATE $s_{bt} = \textstyle{\prod\limits_{i\in I_{bt}} range(i)},$ 
+            \STATE $s_{con} = \textstyle{\prod\limits_{i\in I_{con}} range(i)}.$
             \STATE Reshape $A \leftarrow A_{s_{bt} s_A s_{con}}$
             \STATE Reshape $B \leftarrow B_{s_{bt} s_{con} s_B}$
             \STATE $C\leftarrow$\textsc{BMM}(A,B)
