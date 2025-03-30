@@ -12,7 +12,7 @@ We designed four format strings for pairwise tensor contractions with or without
     \caption{Format string and properties of the four einsum expressions.}
     \label{tab:instance:data}
     \centering
-    { % Apply the scriptsize font to the entire table
+    { \scriptsize
     \begin{tabularx}{\textwidth}{>
     {\raggedright\arraybackslash}p{3cm} >
     {\centering\arraybackslash}X >
@@ -21,16 +21,16 @@ We designed four format strings for pairwise tensor contractions with or without
         \toprule
         \textbf{Format String} & \textbf{Batch Dimension} & \textbf{Traces} & \textbf{Arbitrary Indices} \\
         \midrule
-        aabcd,adeef$\rightarrow$dcf & yes & yes & yes  \\
-        abcd,adef$\rightarrow$dbef & yes & no & yes  \\
-        aabcd,adeef$\rightarrow$bcf & no  & yes & yes  \\
-        abcd,adef$\rightarrow$cbef & no  & no  & no   \\
+        $aabcd,adeef\rightarrow dcf$ & yes & yes & yes  \\
+        $abcd,adef\rightarrow dbef$ & yes & no & yes  \\
+        $aabcd,adeef\rightarrow bcf$ & no  & yes & yes  \\
+        $abcd,adef\rightarrow cbef$ & no  & no  & no   \\
         \bottomrule
     \end{tabularx}
     }
 \end{table}
 
-\noindent To evaluate the performance of the four einsum engines across scenarios with increasing computational intensity, we repeatedly generate random tensors for each problem, increasing the dimensions for each index in each repetition. For example, the first pair of tensor generated for the einsum expression aabcd,adeef$\rightarrow$dcf has sizes (2,2,2,2,2) for both tensor $A$ and $B$, resulting in 128 floating point operations (or 2.11 floating point operations if we use a log10 scale), the second one (5,5,5,5,5), and so forth. A table with the dimension sizes and the resulting number of floating point operations for the four problems can ba found in Table~\ref{tab:dimensions} in the appendix.\\
+\noindent To evaluate the performance of the four einsum engines across scenarios with increasing computational intensity, we repeatedly generated random tensors $A$ and $B$ for each problem, increasing the dimensions for each index in each repetition. For example, the first pair of tensors generated for the einsum expression $aabcd,adeef\rightarrow dcf$ has sizes (2,2,2,2,2) for both tensor $A$ and $B$, resulting in 128 floating point operations (or 2.11 floating point operations if we use a log10 scale), the second one (5,5,5,5,5), and so forth. A table with the dimension sizes and the resulting number of floating point operations for the four problems can be found in Table~\ref{tab:dimensions} in the appendix.\\
 
 \noindent As can be seen in Figure~\ref{flops}, our custom implementation outperformes PyTorch and Numpy for problems that contain batch dimensions, traces and arbitrary indices.
 \begin{figure}[h]
@@ -57,10 +57,10 @@ We designed four format strings for pairwise tensor contractions with or without
         \toprule
         \textbf{\scriptsize Tensor Expression} & \textbf{\scriptsize FLOPS}& \textbf{\scriptsize Custom} & \textbf{\scriptsize np\_mm} & \textbf{\scriptsize Numpy} & \textbf{\scriptsize Torch} \\
         \midrule
-        aabcd,adeef$\rightarrow$dcf &10.74& 0.35 &\textbf{ 1} & 0.00043 & 0.19 \\
-        abcd,adef$\rightarrow$dbef &10.93& 0.36 &\textbf{ 1} & 0.0014  & 0.72 \\
-        aabcd,adeef$\rightarrow$bcf &10.74& 0.15 &\textbf{ 1} & 0.001   & 0.42 \\
-        abcd,adef$\rightarrow$cbef &10.93& 0.11 &\textbf{ 1} & 0.03    & 0.98 \\
+        $aabcd,adeef\rightarrow dcf$ &10.74& 0.35 &\textbf{ 1} & 0.00043 & 0.19 \\
+        $abcd,adef\rightarrow dbef$ &10.93& 0.36 &\textbf{ 1} & 0.0014  & 0.72 \\
+        $aabcd,adeef\rightarrow bcf$ &10.74& 0.15 &\textbf{ 1} & 0.001   & 0.42 \\
+        $abcd,adef\rightarrow cbef$ &10.93& 0.11 &\textbf{ 1} & 0.03    & 0.98 \\
         \bottomrule
     \end{tabularx}
     }

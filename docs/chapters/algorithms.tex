@@ -4,16 +4,16 @@ contraction path. In this section, we present our algorithm for performing a sin
 
 \noindent Given a format string $a_1...a_k,b_1...b_l\rightarrow c_1...c_r$ that contains the indices of the input tensors $A_{a_1...a_k},B_{b_1...b_l}$ and the indices of the output tensor $C_{c_1...c_r}$ in the right order, we divide the index sets of the two to-be-contracted tensors $A$ and $B$ and the output tensor $C$ into the four sets
 \begin{itemize}
-    \item $I_{bt}= \{i_{{batch}_1},...,i_{{batch}_k}\}$, the indices that appear in $A, \text{ }B$ and $C$,
-    \item $I_A=\{i_{{A}_1}, ...,i_{{A}_l}\}$, the indices that appear in both $A$ and $C$ but not in $B$,
-    \item $I_B= \{i_{B_1} ,...,i_{B_m}\}$, the indices that appear in both $B$ and $C$ but not in $A$,
-    \item $I_{con} = \{ i_{{contract}_1}, ..., i_{{contract}_n}\}$, the contracted indices that appear in both $A$ and $B$ but not in $C$.
+    \item $I_{\text{bt}}= \{i_{\text{bt}_1},...,i_{\text{bt}_k}\}$, the indices that appear in $A, \text{ }B$ and $C$,
+    \item $I_\text{A}=\{i_{\text{A}_1}, ...,i_{\text{A}_l}\}$, the indices that appear in both $A$ and $C$ but not in $B$,
+    \item $I_\text{B}= \{i_{\text{B}_1} ,...,i_{\text{B}_m}\}$, the indices that appear in both $B$ and $C$ but not in $A$,
+    \item $I_{\text{con}} = \{ i_{\text{con}_1}, ..., i_{\text{con}_n}\}$, the contracted indices that appear in both $A$ and $B$ but not in $C$.
 \end{itemize}
 Consider that all indices appear at most once in the sets, and that indices which appear solely in $A$ or $B$ but not in $C$ are excluded from all four sets. Because we will need the ranges of the indices in the post-processing, we store the range of each index in a dictionary.\\
 By transposing $A$ to $A'$ using the format string  
-$$\text{indices}_A \rightarrow i_{\text{batch}_1} \dots i_{\text{batch}_k} i_{\text{A}_1} \dots i_{\text{A}_l} i_{\text{contract}_1} \dots i_{\text{contract}_n},$$
+$$indices_A \rightarrow i_{\text{bt}_1} \dots i_{\text{bt}_k} i_{\text{A}_1} \dots i_{\text{A}_l} i_{\text{con}_1} \dots i_{\text{con}_n},$$
 and $B$ to $B'$ using  
-$$\text{indices}_B \rightarrow i_{\text{batch}_1} \dots i_{\text{batch}_k} i_{\text{contract}_1} \dots i_{\text{contract}_n} i_{\text{B}_1} \dots i_{\text{B}_m},$$
+$$indices_B \rightarrow i_{\text{bt}_1} \dots i_{\text{bt}_k} i_{\text{con}_1} \dots i_{\text{con}_n} i_{\text{B}_1} \dots i_{\text{B}_m},$$
 \noindent we reorder the tensors so that batch and contracted dimensions align properly. Using Numpy’s einsum engine~\cite{Numpy} to process the respective format strings, we can transpose, eliminate traces, and sum over arbitrary axes in a single step.  \\
 This procedure ensures that our implementation can handle all possible einsum expressions. In addition, removing traces and arbitrary indices before the contraction results in smaller tensors and therefore smaller intermediate tensors and a lower number of floating-point operations.\\
  We then calculate the shape of the combined batch dimensions, the combined contracted dimensions, and the combined kept dimensions for $A$ and $B$ by multiplying the ranges of the respective indices.\\
@@ -24,18 +24,18 @@ This procedure ensures that our implementation can handle all possible einsum ex
     \begin{algorithmic}[1]
         \REQUIRE format\_string, Tensors $A$, $B$
             \ENSURE Tensor $C$
-            \STATE Retreive $I_A , I_B , I_{bt} , I_{con}$
+            \STATE Retreive $I_A , I_B , I_{\text{bt}} , I_{\text{con}}$
             \STATE Store the sizes of the indices
             \STATE Preprocess $A$: transpose, remove traces and sum over arbitrary axes
             \STATE Preprocess $B$: transpose, remove traces and sum over arbitrary axes
-            \STATE Calculate index set sizes: $s_A = \textstyle{\prod\limits_{i\in I_A} range(i)},$ 
-            \STATE $s_B = \textstyle{\prod\limits_{i\in I_B} range(i)},$ 
-            \STATE $s_{bt} = \textstyle{\prod\limits_{i\in I_{bt}} range(i)},$ 
-            \STATE $s_{con} = \textstyle{\prod\limits_{i\in I_{con}} range(i)}.$
-            \STATE Reshape $A \leftarrow A_{s_{bt} s_A s_{con}}$
-            \STATE Reshape $B \leftarrow B_{s_{bt} s_{con} s_B}$
+            \STATE Calculate the sizes of the index sets: $s_A = \textstyle{\prod\limits_{i\in I_A} \text{range}(i)},$ 
+            \STATE $s_B = \textstyle{\prod\limits_{i\in I_B} \text{range}(i)},$ 
+            \STATE $s_{\text{bt}} = \textstyle{\prod\limits_{i\in I_{\text{bt}}} \text{range}(i)},$ 
+            \STATE $s_{\text{con}} = \textstyle{\prod\limits_{i\in I_{\text{con}}} \text{range}(i)}.$
+            \STATE Reshape $A \leftarrow A_{s_{\text{bt}} s_A s_{\text{con}}}$
+            \STATE Reshape $B \leftarrow B_{s_{\text{bt}} s_{\text{con}} s_B}$
             \STATE $C\leftarrow$\textsc{BMM}(A,B)
-            \STATE Reshape $C\leftarrow C_{i_{{batch}_1}...i_{{batch}_k} i_{{A}_1} ...i_{{A}_l} i_{B_1} ...i_{B_m}}$
+            \STATE Reshape $C\leftarrow C_{i_{\text{batch}_1}...i_{\text{batch}_k} i_{\text{A}_1} ...i_{\text{A}_l} i_{\text{B}_1} ...i_{\text{B}_m}}$
             \STATE Transpose $C\leftarrow C_{outputIndices}$
             \RETURN $C$
     \end{algorithmic}
@@ -65,8 +65,8 @@ For the pseudocode of the multi-tensor contraction refer to Algorithm \ref{alg:m
         \FOR{every path\_tuple in  annotated\_ssa\_path }
         \STATE Retrieve tensors $A$ and $B$ from tensor\_list with indices from the path\_tuple.
         \STATE  Retrieve the short\_format\_string from the path\_tuple.
-        \STATE Set $pc\_method$ depending on the backend\_flag 
-        \STATE  $C =$ $pc\_method$($A$, $B$, short\_format\_string, backend\_flag) 
+        \STATE Set $\texttt{pc\_method}$ depending on the backend\_flag 
+        \STATE  $C =$ $\texttt{pc\_method}$($A$, $B$, short\_format\_string, backend\_flag) 
         \IF{index for tensor $A$ $\geq$ $t\_l$ }
         \STATE Delete $ A$ 
         \ENDIF
