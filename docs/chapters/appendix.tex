@@ -32,21 +32,23 @@
 
 
 \begin{figure}[H]
-    \label{pic:all}
+    \caption{Performance of the four backends over all four pairwise contractions. In all plots, the x-axis depicts the number of floating point operations corresponding to the gradually increased dimension sizes. }
+    \label{figure_all}
     \centering
     \includegraphics[width=0.49\textwidth]{images/aabcd_adeef__dcf.png} 
     \includegraphics[width=0.49\textwidth]{images/aabcd_adeef__bcf.png} \\
     \includegraphics[width=0.49\textwidth]{images/abcd_adef__cbef.png}
     \includegraphics[width=0.49\textwidth]{images/abcd_adef__dbef.png}
     % Include your image
-    \caption{Performance of the four backends over all four pairwise contractions. In all plots, the x-axis depicts the number of floating point operations corresponding to the gradually increased dimension sizes. }
+    
 \end{figure}
 
 \begin{figure}[H]
-    \label{pic:double}
+    \caption{Performance Comparison for different problems from einsum\_benchmark~\cite{blacher2024einsum}, all tensors casted to float\_64.}
+    \label{figure_double}
     \centering
     \includegraphics[width=0.75\textwidth]{images/Datatype_Double.png}  % Include your image
-    \caption{Performance Comparison for different problems from einsum\_benchmark~\cite{blacher2024einsum}, all tensors casted to float\_64.}
+    
 \end{figure}
 
 %\newgeometry{top=3.0cm, bottom=3.0cm, left=4cm, right=2cm}
